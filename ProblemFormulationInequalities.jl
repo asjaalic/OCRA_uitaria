@@ -69,7 +69,7 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
       )
          
     # DEFINE CONSTRAINTS
-    @constraint(M,energy[iStep=1:NSteps], e_charge[iStep]-e_discharge[iStep] == Beta*((h_x[iStep+1]-h_x[iStep])-2*(h_y[iStep+1]-h_y[iStep])-4*(h_z[iStep+1]-h_z[iStep])))
+    @constraint(M,energy[iStep=1:NSteps], e_charge[iStep]-e_discharge[iStep] == Beta*((h_x[iStep+1]-h_x[iStep])+2*(h_y[iStep+1]-h_y[iStep])+4*(h_z[iStep+1]-h_z[iStep]))+min_SOC*(capacity[iStep+1]-capacity[iStep]))
 
     @constraint(M, en_bal[iStep=1:NSteps+1], min_SOC + Beta*(x[iStep]+2*y[iStep]+4*z[iStep]) == soc[iStep]) 
     @constraint(M, en_square[iStep=1:NSteps+1], soc_quad[iStep] == min_SOC^2+ 2*min_SOC*Beta*(x[iStep]+2*y[iStep]+4*z[iStep])+(w_xx[iStep]+4*w_xy[iStep]+8*w_xz[iStep]+4*w_yy[iStep]+16*w_zz[iStep]+16*w_zy[iStep])*Beta^2)

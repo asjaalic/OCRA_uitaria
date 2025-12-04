@@ -122,7 +122,7 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
         end
         
         for iStage=2:(NStages-1)
-            gain_stage[iStage] = sum(Power_prices[iStep]*(e_discharge[iStep]*Eff_discharge-e_harge[iStep]/Eff_charge) for iStep=(Steps_stages[iStage]+1):(Steps_stages[iStage+1]))
+            gain_stage[iStage] = sum(Power_prices[iStep]*(e_discharge[iStep]*Eff_discharge-e_charge[iStep]/Eff_charge) for iStep=(Steps_stages[iStage]+1):(Steps_stages[iStage+1]))
             cost_rev[iStage] = Battery_price_purchase[iStage]*rev[iStage]
             #cost_rev[iStage] = Battery_price_purchase[iStage]*(cap[Steps_stages[iStage]+2]+rev_acquisto[iStage]) - Battery_price_sale[iStage]*(cap[Steps_stages[iStage]+1]-rev_vendita[iStage]) + e[iStage]*fix
         end

@@ -5,7 +5,8 @@
 function data_saving(InputParameters::InputParam,ResultsOpt::Results_3)
 
    @unpack (NYears, NMonths, NStages, Big, NHoursStep, bin) = InputParameters;       #NSteps,NHoursStage  
-   @unpack (e_charge, e_discharge, rev, cap, e, soc, soc_quad, deg, aux_deg, deg_stage, gain_stage, cost_rev, rev_vendita, rev_acquisto, x, y, z, h_x, h_y, h_z, w_xx, w_yy, w_zz, w_xy, w_xz, w_yz) = ResultsOpt;
+   @unpack (e_charge, e_discharge, rev, cap, soc, soc_quad, deg, aux_deg, deg_stage, gain_stage, cost_rev, x, y, z, h_x, h_y, h_z, w_xx, w_yy, w_zz, w_xy, w_xz, w_zy) = ResultsOpt;
+   #@unpack (e_charge, e_discharge, rev, cap, soc, soc_quad, deg, aux_deg, deg_stage, gain_stage, cost_rev, e, rev_vendita, rev_acquisto, x, y, z, h_x, h_y, h_z, w_xx, w_yy, w_zz, w_xy, w_xz, w_zy) = ResultsOpt;
    @unpack (min_SOC, max_SOC, min_P, max_P, Eff_charge, Eff_discharge, max_SOH, min_SOH, Nfull,fix,cost ) = Battery ; 
 
     hour=string(now())
@@ -39,13 +40,13 @@ function data_saving(InputParameters::InputParam,ResultsOpt::Results_3)
     general[!,"Initial Capacity MWh"] = capacity[:]
     general[!,"Final Capacity MWh"] = capacity_finale[:]
     general[!,"Revamping MWh"] = rev[:]
-    general[!, "Binary revamp"] = e[:]
+    #general[!, "Binary revamp"] = e[:]
     general[!,"Degradation"] = deg_stage[:]
     #general[!,"Net_Revenues"] = revenues_per_stage[:]
     general[!,"Gain charge/discharge"] = gain_stage[:]
     general[!,"Cost revamping"] = cost_rev[:]
-    general[!, "Aux acquisto"] = rev_acquisto[:]
-    general[!, "Aux vendita"] = rev_vendita[:]
+   # general[!, "Aux acquisto"] = rev_acquisto[:]
+   # general[!, "Aux vendita"] = rev_vendita[:]
 
     battery_costs[!,"Purchase costs €/MWh"] = Battery_price_purchase[1:NStages+1]    #Battery_price_purchase
     battery_costs[!,"Sale costs €/MWh"] = Battery_price_sale[1:NStages+1] 
@@ -63,8 +64,8 @@ function data_saving(InputParameters::InputParam,ResultsOpt::Results_3)
         steps[!, "Energy_prices €/MWh"] = Power_prices[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
         steps[!, "Energy capacity MWh"] = cap[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
         steps[!, "SOC MWh"] = soc[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
-        steps[!, "Charge MW"] = charge[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
-        steps[!, "Discharge MW"] = discharge[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
+        steps[!, "Charge MW"] = e_charge[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
+        steps[!, "Discharge MW"] = e_discharge[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
         steps[!, "SOC_quad MWh"] = soc_quad[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
         steps[!, "Deg MWh"] = deg[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
         steps[!, "Aux Deg MWh"] = aux_deg[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
