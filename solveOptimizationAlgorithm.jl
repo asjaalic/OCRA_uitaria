@@ -122,16 +122,17 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
         end
         
         for iStage=2:(NStages-1)
-            gain_stage[iStage] = sum(Power_prices[iStep]*NHoursStep*(discharge[iStep]-charge[iStep]) for iStep=(Steps_stages[iStage]+1):(Steps_stages[iStage+1]))
-            cost_rev[iStage] = Battery_price_purchase[iStage]*(cap[Steps_stages[iStage]+2]+rev_acquisto[iStage]) - Battery_price_sale[iStage]*(cap[Steps_stages[iStage]+1]-rev_vendita[iStage]) + e[iStage]*fix
+            gain_stage[iStage] = sum(Power_prices[iStep]*(e_discharge[iStep]*Eff_discharge-e_harge[iStep]/Eff_charge) for iStep=(Steps_stages[iStage]+1):(Steps_stages[iStage+1]))
+            cost_rev[iStage] = Battery_price_purchase[iStage]*rev[iStage]
+            #cost_rev[iStage] = Battery_price_purchase[iStage]*(cap[Steps_stages[iStage]+2]+rev_acquisto[iStage]) - Battery_price_sale[iStage]*(cap[Steps_stages[iStage]+1]-rev_vendita[iStage]) + e[iStage]*fix
         end
 
-        gain_stage[1] = sum(Power_prices[iStep]*NHoursStep*(discharge[iStep]-charge[iStep]) for iStep=(Steps_stages[1]+1):(Steps_stages[2]))
-        cost_rev[1] = Battery_price_purchase[1]*rev[1] + fix*e[1]
+        gain_stage[1] = sum(Power_prices[iStep]*(e_discharge[iStep]*Eff_discharge-e_charge[iStep]/Eff_charge) for iStep=(Steps_stages[1]+1):(Steps_stages[2]))
+        cost_rev[1] = Battery_price_purchase[1]*rev[1] #+ fix*e[1]
 
         gain_stage[NStages]= sum(Power_prices[iStep]*NHoursStep*(discharge[iStep]-charge[iStep]) for iStep=(Steps_stages[NStages]+1):(Steps_stages[NStages+1]))
-        cost_rev[NStages] = e[NStages]*fix + Battery_price_purchase[NStages]*(cap[Steps_stages[NStages]+2]+rev_acquisto[NStages]) - Battery_price_sale[NStages+1]*(cap[end]-min_SOH) -Battery_price_sale[NStages]*(cap[Steps_stages[NStages]+1]-rev_vendita[NStages])
-        
+        #cost_rev[NStages] = e[NStages]*fix + *(cap[Steps_stages[NStages]+2]+rev_acquisto[NStages]) - Battery_price_sale[NStages+1]*(cap[end]-min_SOH) -Battery_price_sale[NStages]*(cap[Steps_stages[NStages]+1]-rev_vendita[NStages])
+        cost_rev[NStages]= Battery_price_sale[NStages]*(cap[end]-min_SOH/min_SOH)
 
     end
     
