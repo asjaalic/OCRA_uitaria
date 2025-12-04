@@ -7,7 +7,7 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @unpack (NYears, NMonths, NStages, Big, NHoursStep, conv, bin) = InputParameters;     #NSteps,NHoursStage
     @unpack (min_SOC, max_SOC, min_P, max_P, Eff_charge, Eff_discharge, max_SOH, min_SOH, Nfull, fix) = Battery ;         
 
-    k = 1/(2*Nfull)
+    k_deg = 1/(2*Nfull)
     Small = 0.64
     disc = 7
     Beta = (max_SOC-min_SOC)/disc
@@ -25,7 +25,7 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
 
     @variable(M, 0 <= e_charge[iStep=1:NSteps] <= max_SOH/min_SOH, base_name= "Charge")      #max_disc   0<=discharge<=1
     @variable(M, 0 <= e_discharge[iStep=1:NSteps] <= max_SOH/min_SOH, base_name= "Discharge")
-    #@variable(M, binary[iStep=1:NSteps], Bin, base_name = "Binary_operation")
+    @variable(M, bin_op[iStep=1:NSteps], Bin, base_name = "Binary_operation")
     
     @variable(M, 0 <= deg[iStep=1:NSteps] <= Small*max_SOH/min_SOH, base_name = "Degradation")
     @variable(M, 0 <= aux_deg[iStep=1:NSteps] <= Small, base_name = "Aux_deg")
@@ -53,6 +53,8 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @variable(M, 0 <= h_x[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_1")
     @variable(M, 0 <= h_y[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_2")
     @variable(M, 0 <= h_z[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_3")
+
+    @variable(M, 0 <= k[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_operation")
 
     # DEFINE OBJECTIVE function - length(Battery_price) = NStages+1=21
     @objective(
@@ -111,7 +113,16 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @constraint(M, h_z_2[iStep=1:NSteps+1], h_z[iStep]<= max_SOH/min_SOH*z[iStep])
     @constraint(M, h_z_3[iStep=1:NSteps+1], h_z[iStep]>= capacity[iStep]-max_SOH/min_SOH*(1-z[iStep]))
     @constraint(M, h_z_4[iStep=1:NSteps+1], h_z[iStep]<= capacity[iStep]-min_SOH/min_SOH*(1-z[iStep]))
-    
+
+    #binary variable for operation
+    @constraint(M, charging[iStep=1:NSteps], e_charge[iStep] <= ((max_SOC-min_SOC)/max_SOC)*capacity[iStep]-((max_SOC-min_SOC)/max_SOC)*k[iStep])
+    @constraint(M, discharging[iStep=1:NSteps], e_discharge[iStep] <= ((max_SOC-min_SOC)/max_SOC)*k[iStep])
+
+    @constraint(M, k_1[iStep=1:NSteps], k[iStep]>=bin_op[iStep]*min_SOH/min_SOH)
+    @constraint(M, k_2[iStep=1:NSteps], k[iStep]<=bin_op[iStep]*max_SOH/min_SOH)
+    @constraint(M, k_3[iStep=1:NSteps], k[iStep]<=capacity[iStep]-min_SOH/min_SOH*(1-bin_op[iStep]))
+    @constraint(M, k_4[iStep=1:NSteps], k[iStep]>=capacity[iStep]-max_SOH/min_SOH*(1-bin_op[iStep]))
+
     # CONSTRAINTS ON DEGRADATION
     @constraint(M, deg_1[iStep=1:NSteps], aux_deg[iStep] >= soc_quad[iStep]/max_SOC^2 - soc_quad[iStep+1]/max_SOC^2 + (2/max_SOC)*(soc[iStep+1]-soc[iStep]))
     @constraint(M, deg_2[iStep=1:NSteps], aux_deg[iStep] >= soc_quad[iStep+1]/max_SOC^2 - soc_quad[iStep]/max_SOC^2 + (2/max_SOC)*(soc[iStep]-soc[iStep+1]))
@@ -119,11 +130,11 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @constraint(M, final_deg[iStep=1:NSteps], deg[iStep] >= capacity[iStep]*aux_deg[iStep])
 
     #CONSTRAINT ON REVAMPING
-    @constraint(M, energy_capacity[iStage=1:NStages], capacity[Steps_stages[iStage]+2] == capacity[Steps_stages[iStage]+1]+revamping[iStage]-deg[Steps_stages[iStage]+1]*k) #
+    @constraint(M, energy_capacity[iStage=1:NStages], capacity[Steps_stages[iStage]+2] == capacity[Steps_stages[iStage]+1]+revamping[iStage]-deg[Steps_stages[iStage]+1]*k_deg) #
    
     @constraint(M, initial_e[iStep=1], capacity[iStep] == min_SOH)
 
-    @constraint(M,en_cap1[iStage in 1:NStages, iStep in ((Steps_stages[iStage]+2):Steps_stages[iStage+1])], capacity[iStep+1]== capacity[iStep]-deg[iStep]*k)
+    @constraint(M,en_cap1[iStage in 1:NStages, iStep in ((Steps_stages[iStage]+2):Steps_stages[iStage+1])], capacity[iStep+1]== capacity[iStep]-deg[iStep]*k_deg)
 
     #@constraint(M, stop_charge[iStage in 2:NStages, iStep in (Steps_stages[iStage]:(Steps_stages[iStage]+Steps_stop[iStage-1]))], e_charge[iStep] <= (1-e[iStage])*max_P)
     
@@ -148,7 +159,7 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
         soc_quad,
         e_charge,
         e_discharge,
-        #binary,
+        bin_op,
         deg,
         aux_deg,
         x,
@@ -173,5 +184,6 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
         #e,
         #rev_vendita,
         #rev_acquisto,
+        k,
       )
 end

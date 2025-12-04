@@ -73,7 +73,7 @@ struct BuildStageProblem_3
     soc_quad::Any
     e_charge::Any 
     e_discharge::Any
-    #binary::Any
+    bin_op::Any
     deg::Any
     aux_deg::Any
     x::Any
@@ -93,6 +93,7 @@ struct BuildStageProblem_3
     #e::Any
     #rev_vendita::Any
     #rev_acquisto::Any
+    k::Any
 end
 
 struct Results_3
@@ -103,7 +104,7 @@ struct Results_3
     soc::Any
     e_charge::Any
     e_discharge::Any
-    #bin::Any
+    bin_op::Any
     deg::Any
     aux_deg::Any
     soc_quad::Any
@@ -124,6 +125,7 @@ struct Results_3
     #e::Any
     #rev_vendita::Any
     #rev_acquisto::Any
+    k::Any
 end
 
 struct BuildStageProblem_4

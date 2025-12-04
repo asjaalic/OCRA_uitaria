@@ -7,7 +7,7 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
 
     println("Solving Optimization Problem")
 
-    k = min_SOH/(2*Nfull)
+    k_deg = min_SOH/(2*Nfull)
 
     objective = 0                   
     #revenues_per_stage = zeros(NStages)
@@ -42,6 +42,8 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
     h_y = zeros(NSteps+1)
     h_z = zeros(NSteps+1)
 
+    k = zeros(NSteps+1)
+
     problem = BuildStageProblem_3(InputParameters, SolverParameters, Battery)
 
     @unpack (M) = problem
@@ -62,7 +64,7 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
             soc[iStep] = JuMP.value(problem.soc[iStep])
             e_charge[iStep] = JuMP.value(problem.e_charge[iStep])
             e_discharge[iStep] = JuMP.value(problem.e_discharge[iStep])
-            deg[iStep] = JuMP.value(problem.deg[iStep])*k
+            deg[iStep] = JuMP.value(problem.deg[iStep])*k_deg
             cap[iStep] = JuMP.value(problem.capacity[iStep])
             #bin[iStep] = JuMP.value(problem.binary[iStep])
 
@@ -81,6 +83,8 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
             h_x[iStep] = JuMP.value(problem.h_x[iStep])
             h_y[iStep] = JuMP.value(problem.h_y[iStep])
             h_z[iStep] = JuMP.value(problem.h_z[iStep])
+
+            k[iStep] = JuMP.value(problem.k[iStep])
 
           #=  w_uu[iStep] = JuMP.value(problem.w_uu[iStep])
             w_xu[iStep] = JuMP.value(problem.w_xu[iStep])
@@ -168,6 +172,7 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
         #e,
         #rev_vendita,
         #rev_acquisto,
+        k,
     )
 
 end
