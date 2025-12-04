@@ -22,10 +22,6 @@ include("solveOptimizationAlgorithm.jl")        #solveOptimizationAlgorithm_3cut
 include("ProblemFormulationInequalities.jl")      #ProblemFormulationCutsTaylor_3
 include("Saving in xlsx.jl")
 
-#########  5 YEARS WITHOUR REVAMPING
-include("Rolling_Planning.jl")
-include("Rolling_problem.jl")
-
 date = string(today())
 
 # PREPARE INPUT DATA
@@ -41,7 +37,7 @@ to = TimerOutput()
   # Set run mode (how and what to run) and Input parameters
   runMode = read_runMode_file()
   InputParameters = set_parameters(runMode, case)
-  @unpack (NYears, NMonths, NHoursStep, NStages, Big, conv, disc, Hours_rolling, Hours_saved)= InputParameters;    #NSteps, NHoursStage
+  @unpack (NYears, NMonths, NHoursStep, NStages, Big, conv, bin, Hours_rolling, Hours_saved)= InputParameters;    #NSteps, NHoursStage
 
   # Upload battery's characteristics
   Battery = set_battery_system(runMode, case)
@@ -65,74 +61,21 @@ to = TimerOutput()
 
 end
 
-#save input data
-@timeit to "Save input" begin
-    save(joinpath(FinalResPath,"CaseDetails.jld"), "case" ,case)
-    save(joinpath(FinalResPath,"SolverParameters.jld"), "SolverParameters" ,SolverParameters)
-    save(joinpath(FinalResPath,"InputParameters.jld"), "InputParameters" ,InputParameters)
-    save(joinpath(FinalResPath,"BatteryCharacteristics.jld"), "BatteryCharacteristics" ,Battery)
-    save(joinpath(FinalResPath,"PowerPrices.jld"),"PowerPrices",Power_prices)
-end
 
 @timeit to "Solve optimization problem" begin
-  ResultsOpt = solveOptimizationProblem(InputParameters,SolverParameters,Battery);
-  save(joinpath(FinalResPath, "optimization_results.jld"), "optimization_results", ResultsOpt)
+  if bin ==3
+  ResultsOpt = solveOptimizationProblem_3(InputParameters,SolverParameters,Battery);
+  else
+    ResultsOpt = solveOptimizationProblem_4(InputParameters,SolverParameters,Battery);
+  end
 end
 
 # SAVE DATA IN EXCEL FILES
 if runMode.excel_savings
-  cartella = "C:\\GitHub\\OCRA_2.0_IREP\\Results_OCRA_2.0"
+  cartella = "C:\\GitHub\\OCRA_3.0_unitaria\\Results"
   cd(cartella)
   Saving = data_saving(InputParameters,ResultsOpt)
 else
   println("Solved without saving results in xlsx format.")
 end
-
-
-
-#= ROLLING-PLANNING METHODOLOGY FOR CAPACITY DEGRADATION -  caso 2
-if runMode.endlife_rolling
-  P1 = read_csv("prices_2019_8760.csv", case.DataPath);
-  P2 = read_csv("prices_2020_8760.csv", case.DataPath);
-  P3 = read_csv("prices_2021_8760.csv", case.DataPath);
-  P4 = read_csv("prices_2022_8760.csv", case.DataPath);
-  P5 = read_csv("prices_2023_8760.csv", case.DataPath);
-
-  vec_prices = vcat(P1,P2,P3,P4,P5,P1,P2,P3,P4,P5);
-
-  ResultsEnd = solveRollingPlanning(InputParameters, Battery, ResultsOpt, vec_prices)
-  Saving2 = data_saving_rolling(InputParameters,ResultsEnd)
-end
-
-if runMode.rolling_newDeg
-  p1 = read_csv("prices_2019_8760.csv", case.DataPath);
-  p2 = read_csv("prices_2020_8760.csv", case.DataPath);
-  p3 = read_csv("prices_2021_8760.csv", case.DataPath);
-  p4 = read_csv("prices_2022_8760.csv", case.DataPath);
-  p5 = read_csv("prices_2023_8760.csv", case.DataPath);
-
-  prices = vcat(p1,p2,p3,p4,p5,p1,p2,p3,p4,p5);
-
-  NewDeg = solveNewDegradation(InputParameters, Battery, ResultsOpt, prices)
-  Saving3 = saving_new_deg(InputParameters,ResultsEnd)
-end
-
-# caso 1 - no rolling su 5 anni senza revamping 
-if runMode.endlife
-  Pa = read_csv("prices_2019_8760.csv", case.DataPath);
-  Pb = read_csv("prices_2020_8760.csv", case.DataPath);
-  Pc = read_csv("prices_2021_8760.csv", case.DataPath);
-  Pd = read_csv("prices_2022_8760.csv", case.DataPath);
-  Pe = read_csv("prices_2023_8760.csv", case.DataPath);
-
-  vec_p = vcat(Pa,Pb,Pc,Pd,Pe,Pa,Pb,Pc,Pd,Pe);
-  Tot_steps = length(vec_p)
-  RE = solveCase1(InputParameters, Battery, ResultsOpt, vec_p, Tot_steps)
-  Saving1= data_endlife(InputParameters,RE)
-end
-
-print(to)
-=#
-
-
 

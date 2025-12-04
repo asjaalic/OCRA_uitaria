@@ -13,7 +13,7 @@
     Hours_saved::I
     Big::F                                        # A big number
     conv::F                                       # A small number for degradation convergence
-    disc::I                                       # Discretization points
+    bin::I                                       # Number of binaries for discretization of SE
 end
 
 # Battery's characteristics
@@ -67,28 +67,86 @@ end
 end
 
 # Optimization problem
-struct BuildStageProblem
+struct BuildStageProblem_3
     M::Any
     soc::Any
     soc_quad::Any
-    charge::Any 
-    discharge::Any
+    e_charge::Any 
+    e_discharge::Any
     #binary::Any
     deg::Any
+    aux_deg::Any
     x::Any
     y::Any
     z::Any
-    #u::Any
+    h_x::Any
+    h_y::Any
+    h_z::Any
     w_xx::Any
     w_yy::Any
     w_zz::Any
     w_xy::Any
     w_xz::Any
     w_zy::Any
-    #w_uu::Any
-    #w_xu::Any
-    #w_yu::Any
-    #w_zu::Any
+    capacity::Any
+    revamping::Any
+    #e::Any
+    #rev_vendita::Any
+    #rev_acquisto::Any
+end
+
+struct Results_3
+    objective::Any
+    gain_stage::Any
+    cost_rev::Any
+    deg_stage::Any
+    soc::Any
+    e_charge::Any
+    e_discharge::Any
+    #bin::Any
+    deg::Any
+    aux_deg::Any
+    soc_quad::Any
+    x::Any
+    y::Any
+    z::Any
+    w_xx::Any
+    w_yy::Any
+    w_zz::Any
+    w_xy::Any
+    w_xz::Any
+    w_zy::Any
+    h_x::Any
+    h_y::Any
+    h_z::Any
+    rev::Any
+    cap::Any
+    #e::Any
+    #rev_vendita::Any
+    #rev_acquisto::Any
+end
+
+struct BuildStageProblem_4
+    M::Any
+    soc::Any
+    soc_quad::Any
+    charge::Any 
+    discharge::Any
+    deg::Any
+    x::Any
+    y::Any
+    z::Any
+    u::Any
+    w_xx::Any
+    w_yy::Any
+    w_zz::Any
+    w_xy::Any
+    w_xz::Any
+    w_zy::Any
+    w_uu::Any
+    w_xu::Any
+    w_yu::Any
+    w_zu::Any
     capacity::Any
     revamping::Any
     e::Any
@@ -96,9 +154,8 @@ struct BuildStageProblem
     rev_acquisto::Any
 end
 
-struct Results
+struct Results_4
     objective::Any
-    #revenues_per_stage::Any
     gain_stage::Any
     cost_rev::Any
     deg_stage::Any
@@ -111,176 +168,20 @@ struct Results
     x::Any
     y::Any
     z::Any
-    #u::Any
+    u::Any
     w_xx::Any
     w_yy::Any
     w_zz::Any
-    #w_uu::Any
+    w_uu::Any
     w_xy::Any
     w_xz::Any
     w_zy::Any
-    #w_xu::Any
-    #w_yu::Any
-    #w_zu::Any
+    w_xu::Any
+    w_yu::Any
+    w_zu::Any
     rev::Any
     cap::Any
     e::Any
     rev_vendita::Any
     rev_acquisto::Any
-end
-
-# RESULTS ROLLING PLANNING (CASO 2)
-struct ResultsEndLife       #Raccolta dati e aggiornamento parametri input
-    M_end::Any
-    Ch_end::Any
-    Dis_end::Any
-    soc_end::Any
-    socq_end::Any
-    deg_end::Any
-    cap_end::Any
-    x_end::Any
-    y_end::Any
-    z_end::Any
-    u_end::Any
-    w_xx_end::Any
-    w_yy_end::Any
-    w_zz_end::Any
-    w_uu_end::Any
-    w_xy_end::Any
-    w_xz_end::Any
-    w_zy_end::Any
-    w_xu_end::Any
-    w_yu_end::Any
-    w_zu_end::Any
-    new_vec::Any
-end
-
-struct Rolling_problem
-    M_f::Any
-    charge_f::Any
-    discharge_f::Any
-    soc_f::Any
-    soc_quad_f::Any
-    deg_f::Any
-    x_f::Any
-    y_f::Any
-    z_f::Any
-    u_f::Any
-    w_xx_f::Any
-    w_yy_f::Any
-    w_zz_f::Any
-    w_xy_f::Any
-    w_xz_f::Any
-    w_zy_f::Any
-    w_uu_f::Any
-    w_xu_f::Any
-    w_yu_f::Any
-    w_zu_f::Any
-    capacity_f::Any
-    State_initial::Any
-    initial_capacity_f::Any
-end
-
-# RESULTS CASE 1 - NO ROLLING PLANNING
-
-struct Case1
-    M_e::Any
-    charge_e::Any
-    discharge_e::Any
-    soc_e::Any
-    soc_quad_e::Any
-    deg_e::Any
-    x_e::Any
-    y_e::Any
-    z_e::Any
-    u_e::Any
-    w_xx_e::Any
-    w_yy_e::Any
-    w_zz_e::Any
-    w_xy_e::Any
-    w_xz_e::Any
-    w_zy_e::Any
-    w_uu_e::Any
-    w_xu_e::Any
-    w_yu_e::Any
-    w_zu_e::Any
-    capacity_e::Any
-    State_initial_e::Any
-    initial_capacity_e::Any
-end
-
-struct ResultsCase1
-    soc_e1::Any
-    charge_e1::Any
-    discharge_e1::Any
-    deg_e1::Any
-    soc_quad_e1::Any
-    x_e1::Any
-    y_e1::Any
-    z_e1::Any
-    u_e1::Any
-    w_xx_e1::Any
-    w_yy_e1::Any
-    w_zz_e1::Any
-    w_uu_e1::Any
-    w_xy_e1::Any
-    w_xz_e1::Any
-    w_zy_e1::Any
-    w_xu_e1::Any
-    w_yu_e1::Any
-    w_zu_e1::Any
-    cap_e1::Any
-end
-
-# CASO 3
-
-struct Case3
-    M_new::Any
-    charge_new::Any
-    discharge_new::Any
-    soc_new::Any
-    soc_quad_new::Any
-    deg_new::Any
-    x_new::Any
-    y_new::Any
-    z_new::Any
-    u_new::Any
-    w_xx_new::Any
-    w_yy_new::Any
-    w_zz_new::Any
-    w_xy_new::Any
-    w_xz_new::Any
-    w_zy_new::Any
-    w_uu_new::Any
-    w_xu_new::Any
-    w_yu_new::Any
-    w_zu_new::Any
-    capacity_new::Any
-    State_initial_new::Any
-    initial_capacity_new::Any
-end
-
-struct ResultsNewDeg
-    problem_new_deg::Any
-    charge_new_deg::Any
-    discharge_new_deg::Any
-    state_new_deg::Any
-    stateQuad_new_deg::Any
-    degradation_new_deg::Any
-    capacity_new_deg::Any
-    x_new_deg::Any
-    y_new_deg::Any
-    z_new_deg::Any
-    u_new_deg::Any
-    w_xx_new_deg::Any
-    w_yy_new_deg::Any
-    w_zz_new_deg::Any
-    w_uu_new_deg::Any
-    w_xy_new_deg::Any
-    w_xz_new_deg::Any
-    w_zy_new_deg::Any
-    w_xu_new_deg::Any
-    w_yu_new_deg::Any
-    w_zu_new_deg::Any
-    new_new_deg::Any
 end
