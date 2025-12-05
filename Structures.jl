@@ -93,7 +93,6 @@ struct BuildStageProblem_3
     #e::Any
     #rev_vendita::Any
     #rev_acquisto::Any
-    k::Any
 end
 
 struct Results_3
@@ -125,7 +124,6 @@ struct Results_3
     #e::Any
     #rev_vendita::Any
     #rev_acquisto::Any
-    k::Any
 end
 
 struct BuildStageProblem_4

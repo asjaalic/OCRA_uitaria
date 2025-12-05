@@ -5,7 +5,7 @@
 function data_saving(InputParameters::InputParam,ResultsOpt::Results_3)
 
    @unpack (NYears, NMonths, NStages, Big, NHoursStep, bin) = InputParameters;       #NSteps,NHoursStage  
-   @unpack (e_charge, e_discharge, rev, cap, soc, soc_quad, deg, aux_deg, deg_stage, gain_stage, cost_rev, x, y, z, h_x, h_y, h_z, w_xx, w_yy, w_zz, w_xy, w_xz, w_zy, k) = ResultsOpt;
+   @unpack (e_charge, e_discharge, rev, cap, soc, soc_quad, deg, aux_deg, deg_stage, gain_stage, cost_rev, x, y, z, h_x, h_y, h_z, w_xx, w_yy, w_zz, w_xy, w_xz, w_zy, bin_op) = ResultsOpt;
    #@unpack (e_charge, e_discharge, rev, cap, soc, soc_quad, deg, aux_deg, deg_stage, gain_stage, cost_rev, e, rev_vendita, rev_acquisto, x, y, z, h_x, h_y, h_z, w_xx, w_yy, w_zz, w_xy, w_xz, w_zy) = ResultsOpt;
    @unpack (min_SOC, max_SOC, min_P, max_P, Eff_charge, Eff_discharge, max_SOH, min_SOH, Nfull,fix,cost ) = Battery ; 
 
@@ -69,7 +69,7 @@ function data_saving(InputParameters::InputParam,ResultsOpt::Results_3)
         steps[!, "SOC_quad MWh"] = soc_quad[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
         steps[!, "Deg MWh"] = deg[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
         steps[!, "Aux Deg MWh"] = aux_deg[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
-        steps[!, "Bin operation k"] = k[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
+        steps[!, "Bin operation "] = bin_op[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
 
         steps[!, "x"] = x[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
         steps[!, "y"] = y[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]

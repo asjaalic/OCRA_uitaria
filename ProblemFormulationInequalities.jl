@@ -54,8 +54,6 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @variable(M, 0 <= h_y[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_2")
     @variable(M, 0 <= h_z[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_3")
 
-    @variable(M, 0 <= k[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_operation")
-
     # DEFINE OBJECTIVE function - length(Battery_price) = NStages+1=21
     @objective(
       M,
@@ -115,13 +113,8 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @constraint(M, h_z_4[iStep=1:NSteps+1], h_z[iStep]<= capacity[iStep]-min_SOH/min_SOH*(1-z[iStep]))
 
     #binary variable for operation
-    @constraint(M, charging[iStep=1:NSteps], e_charge[iStep] <= ((max_SOC-min_SOC)/max_SOC)*capacity[iStep]-((max_SOC-min_SOC)/max_SOC)*k[iStep])
-    @constraint(M, discharging[iStep=1:NSteps], e_discharge[iStep] <= ((max_SOC-min_SOC)/max_SOC)*k[iStep])
-
-    @constraint(M, k_1[iStep=1:NSteps], k[iStep]>=bin_op[iStep]*min_SOH/min_SOH)
-    @constraint(M, k_2[iStep=1:NSteps], k[iStep]<=bin_op[iStep]*max_SOH/min_SOH)
-    @constraint(M, k_3[iStep=1:NSteps], k[iStep]<=capacity[iStep]-min_SOH/min_SOH*(1-bin_op[iStep]))
-    @constraint(M, k_4[iStep=1:NSteps], k[iStep]>=capacity[iStep]-max_SOH/min_SOH*(1-bin_op[iStep]))
+    @constraint(M, charging[iStep=1:NSteps], e_charge[iStep] <= max_P*NHoursStep*(1-bin_op[iStep]))
+    @constraint(M, discharging[iStep=1:NSteps], e_discharge[iStep] <= max_P*NHoursStep*bin_op[iStep])
 
     # CONSTRAINTS ON DEGRADATION
     @constraint(M, deg_1[iStep=1:NSteps], aux_deg[iStep] >= soc_quad[iStep]/max_SOC^2 - soc_quad[iStep+1]/max_SOC^2 + (2/max_SOC)*(soc[iStep+1]-soc[iStep]))
@@ -184,6 +177,5 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
         #e,
         #rev_vendita,
         #rev_acquisto,
-        k,
       )
 end
