@@ -117,8 +117,8 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @constraint(M, discharging[iStep=1:NSteps], e_discharge[iStep] <= max_P*NHoursStep*bin_op[iStep])
 
     # CONSTRAINTS ON DEGRADATION
-    @constraint(M, deg_1[iStep=1:NSteps], aux_deg[iStep] >= soc_quad[iStep]/max_SOC^2 - soc_quad[iStep+1]/max_SOC^2 + (2/max_SOC)*(soc[iStep+1]-soc[iStep]))
-    @constraint(M, deg_2[iStep=1:NSteps], aux_deg[iStep] >= soc_quad[iStep+1]/max_SOC^2 - soc_quad[iStep]/max_SOC^2 + (2/max_SOC)*(soc[iStep]-soc[iStep+1]))
+    @constraint(M, deg_1[iStep=1:NSteps], aux_deg[iStep] >= soc_quad[iStep] - soc_quad[iStep+1] + 2*(soc[iStep+1]-soc[iStep]))
+    @constraint(M, deg_2[iStep=1:NSteps], aux_deg[iStep] >= soc_quad[iStep+1] - soc_quad[iStep] + 2*(soc[iStep]-soc[iStep+1]))
 
     @constraint(M, final_deg[iStep=1:NSteps], deg[iStep] >= capacity[iStep]*aux_deg[iStep])
 
