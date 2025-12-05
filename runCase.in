@@ -1,6 +1,6 @@
-DataPath = C:\\GitHub\\OCRA_2.0_IREP
-InputPath = C:\\GitHub\\OCRA_2.0_IREP
-ResultPath = C:\\GitHub\\OCRA_2.0_IREP
+DataPath = C:\\GitHub\\OCRA_3.0_unitaria
+InputPath = C:\\GitHub\\OCRA_3.0_unitaria
+ResultPath = C:\\GitHub\\OCRA_3.0_unitaria
 #ending to case name 
 CaseName = _Version_exact_inequalities
 
