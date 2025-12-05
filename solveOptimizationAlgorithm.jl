@@ -23,7 +23,7 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
     rev= zeros(NStages)
     cap = zeros(NSteps+1)
     #e = zeros(NStages)
-    #bin = zeros(NSteps)
+    bin_op = zeros(NSteps)
 
     #rev_vendita = zeros(NStages)
     #rev_acquisto = zeros(NStages)
@@ -42,7 +42,6 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
     h_y = zeros(NSteps+1)
     h_z = zeros(NSteps+1)
 
-    k = zeros(NSteps+1)
 
     problem = BuildStageProblem_3(InputParameters, SolverParameters, Battery)
 
@@ -66,7 +65,7 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
             e_discharge[iStep] = JuMP.value(problem.e_discharge[iStep])
             deg[iStep] = JuMP.value(problem.deg[iStep])*k_deg
             cap[iStep] = JuMP.value(problem.capacity[iStep])
-            #bin[iStep] = JuMP.value(problem.binary[iStep])
+            bin_op[iStep] = JuMP.value(problem.bin_op[iStep])
 
             soc_quad[iStep] = JuMP.value(problem.soc_quad[iStep])
             x[iStep] = JuMP.value(problem.x[iStep])
@@ -83,8 +82,6 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
             h_x[iStep] = JuMP.value(problem.h_x[iStep])
             h_y[iStep] = JuMP.value(problem.h_y[iStep])
             h_z[iStep] = JuMP.value(problem.h_z[iStep])
-
-            k[iStep] = JuMP.value(problem.k[iStep])
 
           #=  w_uu[iStep] = JuMP.value(problem.w_uu[iStep])
             w_xu[iStep] = JuMP.value(problem.w_xu[iStep])
@@ -151,7 +148,7 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
         soc,
         e_charge,
         e_discharge,
-        #bin,
+        bin_op,
         deg,
         aux_deg,
         soc_quad,
@@ -172,7 +169,6 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
         #e,
         #rev_vendita,
         #rev_acquisto,
-        k,
     )
 
 end

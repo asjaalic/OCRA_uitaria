@@ -112,8 +112,8 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @constraint(M, h_z_4[iStep=1:NSteps+1], h_z[iStep]<= capacity[iStep]-min_SOH/min_SOH*(1-z[iStep]))
 
     #binary variable for operation
-    @constraint(M, charging[iStep=1:NSteps], e_charge[iStep] <= ((max_SOC-min_SOC)/max_SOC)*capacity[iStep]-((max_SOC-min_SOC)/max_SOC)*k[iStep])
-    @constraint(M, discharging[iStep=1:NSteps], e_discharge[iStep] <= ((max_SOC-min_SOC)/max_SOC)*k[iStep])
+    @constraint(M, charging[iStep=1:NSteps], e_charge[iStep] <= NHoursStep*max_P*(1-bin_op[iStep]))
+    @constraint(M, discharging[iStep=1:NSteps], e_discharge[iStep] <= NHoursStep*max_P*bin_op[iStep])
 
 
     # CONSTRAINTS ON DEGRADATION
@@ -152,7 +152,6 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
         e_discharge,
         bin_op,
         deg,
-        aux_deg,
         x,
         y,
         z,
@@ -175,6 +174,5 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
         #e,
         #rev_vendita,
         #rev_acquisto,
-        k,
       )
 end
