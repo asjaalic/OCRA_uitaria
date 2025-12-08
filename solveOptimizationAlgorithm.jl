@@ -150,7 +150,6 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
         e_discharge,
         bin_op,
         deg,
-        aux_deg,
         soc_quad,
         x,
         y,
