@@ -93,6 +93,9 @@ struct BuildStageProblem_3
     #e::Any
     #rev_vendita::Any
     #rev_acquisto::Any
+    x_cap::Any
+    y_cap::Any
+    z_cap::Any
 end
 
 struct Results_3
@@ -124,6 +127,9 @@ struct Results_3
     #e::Any
     #rev_vendita::Any
     #rev_acquisto::Any
+    x_cap::Any
+    y_cap::Any
+    z_cap::Any
 end
 
 struct BuildStageProblem_4

@@ -5,14 +5,14 @@
 function data_saving(InputParameters::InputParam,ResultsOpt::Results_3)
 
    @unpack (NYears, NMonths, NStages, Big, NHoursStep, bin) = InputParameters;       #NSteps,NHoursStage  
-   @unpack (e_charge, e_discharge, rev, cap, soc, soc_quad, deg, aux_deg, deg_stage, gain_stage, cost_rev, x, y, z, h_x, h_y, h_z, w_xx, w_yy, w_zz, w_xy, w_xz, w_zy, bin_op) = ResultsOpt;
+   @unpack (e_charge, e_discharge, rev, cap, soc, soc_quad, deg, aux_deg, deg_stage, gain_stage, cost_rev, x, y, z, h_x, h_y, h_z, w_xx, w_yy, w_zz, w_xy, w_xz, w_zy, bin_op, x_cap, y_cap, z_cap) = ResultsOpt;
    #@unpack (e_charge, e_discharge, rev, cap, soc, soc_quad, deg, aux_deg, deg_stage, gain_stage, cost_rev, e, rev_vendita, rev_acquisto, x, y, z, h_x, h_y, h_z, w_xx, w_yy, w_zz, w_xy, w_xz, w_zy) = ResultsOpt;
    @unpack (min_SOC, max_SOC, min_P, max_P, Eff_charge, Eff_discharge, max_SOH, min_SOH, Nfull,fix,cost ) = Battery ; 
 
     hour=string(now())
     a=replace(hour,':'=> '-')
 
-    nameF= "3 variabili, opzione 1, $max_SOH SoH"
+    nameF= "3 variabili, opzione 3, $max_SOH SoH"
     nameFile="Summary " 
 
     folder = "$nameF"
@@ -77,6 +77,10 @@ function data_saving(InputParameters::InputParam,ResultsOpt::Results_3)
         steps[!, "h_x"] = h_x[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
         steps[!, "h_y"] = h_y[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
         steps[!, "h_z"] = h_z[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
+
+        steps[!, "x_cap"] = x_cap[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
+        steps[!, "y_cap"] = y_cap[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
+        steps[!, "z_cap"] = z_cap[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
 
         XLSX.writetable("$iStage stage $a.xlsx", overwrite=true,                                       #$nameFile
         results_steps = (collect(DataFrames.eachcol(steps)),DataFrames.names(steps)),

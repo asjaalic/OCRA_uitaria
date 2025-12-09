@@ -11,6 +11,7 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     Small = 0.64
     disc = 7
     Beta = (max_SOC-min_SOC)/disc
+    Beta_cap = (max_SOH-min_SOH)/disc
 
     M = Model(Gurobi.Optimizer)
     set_optimizer_attribute(M, "MIPGap", 0.05)
@@ -49,7 +50,13 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @variable(M, 0<= w_xy[iStep=1:NSteps+1] <= 1, base_name = "xy")
     @variable(M, 0<= w_xz[iStep=1:NSteps+1] <= 1, base_name = "xz")
     @variable(M, 0<= w_zy[iStep=1:NSteps+1] <= 1, base_name = "yz")
-    
+
+    #VARIABLES FOR DISCRETIZATION OF ENERGY CAPACITY
+    @variable(M, x_e[iStep=1:NSteps+1], Bin, base_name = "Binary_1_cap")
+    @variable(M, y_e[iStep=1:NSteps+1], Bin, base_name = "Binary_2_cap")
+    @variable(M, z_e[iStep=1:NSteps+1], Bin, base_name = "Binary_3_cap")
+
+    #VARIABLES FOR BILINEAR TERMS
     @variable(M, 0 <= h_x[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_1")
     @variable(M, 0 <= h_y[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_2")
     @variable(M, 0 <= h_z[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_3")
@@ -73,6 +80,8 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
 
     @constraint(M, en_bal[iStep=1:NSteps+1], min_SOC + Beta*(x[iStep]+2*y[iStep]+4*z[iStep]) == soc[iStep]) 
     @constraint(M, en_square[iStep=1:NSteps+1], soc_quad[iStep] == min_SOC^2+ 2*min_SOC*Beta*(x[iStep]+2*y[iStep]+4*z[iStep])+(w_xx[iStep]+4*w_xy[iStep]+8*w_xz[iStep]+4*w_yy[iStep]+16*w_zz[iStep]+16*w_zy[iStep])*Beta^2)
+
+    @constraint(M, disc_capacity[iStep=1:NSteps+1], min_SOH + Beta_cap*(x_cap[iStep]+2*y_cap[iStep]+4*z_cap[iStep]) >= capacity[iStep]) 
     
     # AUXILIARY FOR FORTET EXACT INEQUALITIES
     @constraint(M, xx_1[iStep=1:NSteps+1], w_xx[iStep] <= x[iStep])
@@ -120,7 +129,7 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @constraint(M, deg_1[iStep=1:NSteps], aux_deg[iStep] >= soc_quad[iStep] - soc_quad[iStep+1] + 2*(soc[iStep+1]-soc[iStep]))
     @constraint(M, deg_2[iStep=1:NSteps], aux_deg[iStep] >= soc_quad[iStep+1] - soc_quad[iStep] + 2*(soc[iStep]-soc[iStep+1]))
 
-    @constraint(M, final_deg[iStep=1:NSteps], deg[iStep] >= capacity[iStep]*aux_deg[iStep])
+    @constraint(M, final_deg[iStep=1:NSteps], deg[iStep] >= (min_SOH + Beta_cap*(x_cap[iStep]+2*y_cap[iStep]+4*z_cap[iStep]))*aux_deg[iStep])
 
     #CONSTRAINT ON REVAMPING
     @constraint(M, energy_capacity[iStage=1:NStages], capacity[Steps_stages[iStage]+2] == capacity[Steps_stages[iStage]+1]+revamping[iStage]-deg[Steps_stages[iStage]+1]*k_deg) #
@@ -161,21 +170,19 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
         h_x,
         h_y,
         h_z,
-        #u,
         w_xx,
         w_yy,
         w_zz,
         w_xy,
         w_xz,
         w_zy,
-        #w_uu,
-        #w_xu,
-        #w_yu,
-        #w_zu,
         capacity,
         revamping,
         #e,
         #rev_vendita,
         #rev_acquisto,
+        x_cap,
+        y_cap,
+        z_cap,
       )
 end
