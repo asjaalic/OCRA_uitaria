@@ -19,7 +19,7 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
     e_discharge = zeros(NSteps)
     soc = zeros(NSteps+1)
     deg = zeros(NSteps)
-    aux_deg = zeros(NSteps)
+
     rev= zeros(NStages)
     cap = zeros(NSteps+1)
     #e = zeros(NStages)
@@ -45,8 +45,8 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
 
     problem = BuildStageProblem_3(InputParameters, SolverParameters, Battery)
 
-    @unpack (M) = problem
-    write_to_file(M,"modello_Formato_mps.mps")
+    #@unpack (M) = problem
+    #write_to_file(M,"modello_Formato_mps.mps")
 
     @timeit to "Solve optimization" optimize!(problem.M)
 

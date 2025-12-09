@@ -28,7 +28,6 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @variable(M, bin_op[iStep=1:NSteps], Bin, base_name = "Binary_operation")
     
     @variable(M, 0 <= deg[iStep=1:NSteps] <= Small*max_SOH/min_SOH, base_name = "Degradation")
-    @variable(M, 0 <= aux_deg[iStep=1:NSteps] <= Small, base_name = "Aux_deg")
 
     @variable(M, 0 <= revamping[iStage=1:NStages] <= (max_SOH-min_SOH)/max_SOC, base_name = "Revamping")
     @variable(M, min_SOH/min_SOH <= capacity[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Energy_Capacity")        #energy_Capacity     [iStage=1:NStages]
@@ -117,10 +116,8 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @constraint(M, discharging[iStep=1:NSteps], e_discharge[iStep] <= max_P*NHoursStep*bin_op[iStep])
 
     # CONSTRAINTS ON DEGRADATION
-    @constraint(M, deg_1[iStep=1:NSteps], aux_deg[iStep] >= soc_quad[iStep] - soc_quad[iStep+1] + 2*(soc[iStep+1]-soc[iStep]))
-    @constraint(M, deg_2[iStep=1:NSteps], aux_deg[iStep] >= soc_quad[iStep+1] - soc_quad[iStep] + 2*(soc[iStep]-soc[iStep+1]))
-
-    @constraint(M, final_deg[iStep=1:NSteps], deg[iStep] >= capacity[iStep]*aux_deg[iStep])
+    @constraint(M, deg_1[iStep=1:NSteps], deg[iStep] >= capacity[iStep]*((2*min_SOC*Beta*(x[iStep]+2*y[iStep]+4*z[iStep])+(w_xx[iStep]+4*w_xy[iStep]+8*w_xz[iStep]+4*w_yy[iStep]+16*w_zz[iStep]+16*w_zy[iStep])*Beta^2) - (2*min_SOC*Beta*(x[iStep+1]+2*y[iStep+1]+4*z[iStep+1])+(w_xx[iStep+1]+4*w_xy[iStep+1]+8*w_xz[iStep+1]+4*w_yy[iStep+1]+16*w_zz[iStep+1]+16*w_zy[iStep+1])*Beta^2) + 2*(Beta*(x[iStep+1]+2*y[iStep+1]+4*z[iStep+1])-Beta*(x[iStep]+2*y[iStep]+4*z[iStep]))))
+    @constraint(M, deg_2[iStep=1:NSteps], deg[iStep] >= capacity[iStep]*((2*min_SOC*Beta*(x[iStep+1]+2*y[iStep+1]+4*z[iStep+1])+(w_xx[iStep+1]+4*w_xy[iStep+1]+8*w_xz[iStep+1]+4*w_yy[iStep+1]+16*w_zz[iStep+1]+16*w_zy[iStep+1])*Beta^2) - (2*min_SOC*Beta*(x[iStep]+2*y[iStep]+4*z[iStep])+(w_xx[iStep]+4*w_xy[iStep]+8*w_xz[iStep]+4*w_yy[iStep]+16*w_zz[iStep]+16*w_zy[iStep])*Beta^2) + 2*(Beta*(x[iStep]+2*y[iStep]+4*z[iStep])-Beta*(x[iStep+1]+2*y[iStep+1]+4*z[iStep+1]))))
 
     #CONSTRAINT ON REVAMPING
     @constraint(M, energy_capacity[iStage=1:NStages], capacity[Steps_stages[iStage]+2] == capacity[Steps_stages[iStage]+1]+revamping[iStage]-deg[Steps_stages[iStage]+1]*k_deg) #
@@ -154,7 +151,7 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
         e_discharge,
         bin_op,
         deg,
-        aux_deg,
+        #aux_deg,
         x,
         y,
         z,

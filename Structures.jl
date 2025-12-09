@@ -75,7 +75,7 @@ struct BuildStageProblem_3
     e_discharge::Any
     bin_op::Any
     deg::Any
-    aux_deg::Any
+   # aux_deg::Any
     x::Any
     y::Any
     z::Any
@@ -105,7 +105,7 @@ struct Results_3
     e_discharge::Any
     bin_op::Any
     deg::Any
-    aux_deg::Any
+    #aux_deg::Any
     soc_quad::Any
     x::Any
     y::Any
