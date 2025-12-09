@@ -82,7 +82,7 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
             h_y[iStep] = JuMP.value(problem.h_y[iStep])
             h_z[iStep] = JuMP.value(problem.h_z[iStep])
 
-            bin_op[iStep] = JuMP.value(bin_op.bin_op[iStep])
+            bin_op[iStep] = JuMP.value(problem.bin_op[iStep])
 
         end
 
