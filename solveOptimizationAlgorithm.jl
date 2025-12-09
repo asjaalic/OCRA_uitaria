@@ -82,7 +82,7 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
             h_y[iStep] = JuMP.value(problem.h_y[iStep])
             h_z[iStep] = JuMP.value(problem.h_z[iStep])
 
-            bin_op[iStep] = JuMP.value(bin_op.k[iStep])
+            bin_op[iStep] = JuMP.value(bin_op.bin_op[iStep])
 
         end
 
@@ -139,7 +139,7 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
         soc,
         e_charge,
         e_discharge,
-        #bin,
+        bin_op,
         deg,
         aux_deg,
         soc_quad,
@@ -160,7 +160,6 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
         #e,
         #rev_vendita,
         #rev_acquisto,
-        bin_op,
     )
 
 end
