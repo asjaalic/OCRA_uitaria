@@ -68,7 +68,7 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
       )
          
     # DEFINE CONSTRAINTS
-    @constraint(M,energy[iStep=1:NSteps], e_charge[iStep]-e_discharge[iStep] == Beta*((h_x[iStep+1]-h_x[iStep])+2*(h_y[iStep+1]-h_y[iStep])+4*(h_z[iStep+1]-h_z[iStep]))+min_SOC*(capacity[iStep+1]-capacity[iStep]))
+    @constraint(M,energy[iStep=1:NSteps], e_charge[iStep]-e_discharge[iStep] == soc[iStep+1]-soc[iStep] )#Beta*((h_x[iStep+1]-h_x[iStep])+2*(h_y[iStep+1]-h_y[iStep])+4*(h_z[iStep+1]-h_z[iStep]))+min_SOC*(capacity[iStep+1]-capacity[iStep]))
 
     @constraint(M, en_bal[iStep=1:NSteps+1], min_SOC + Beta*(x[iStep]+2*y[iStep]+4*z[iStep]) == soc[iStep]) 
     @constraint(M, en_square[iStep=1:NSteps+1], soc_quad[iStep] == min_SOC^2+ 2*min_SOC*Beta*(x[iStep]+2*y[iStep]+4*z[iStep])+(w_xx[iStep]+4*w_xy[iStep]+8*w_xz[iStep]+4*w_yy[iStep]+16*w_zz[iStep]+16*w_zy[iStep])*Beta^2)
@@ -116,8 +116,8 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @constraint(M, discharging[iStep=1:NSteps], e_discharge[iStep] <= max_P*NHoursStep*bin_op[iStep])
 
     # CONSTRAINTS ON DEGRADATION
-    @constraint(M, deg_1[iStep=1:NSteps], deg[iStep] >= capacity[iStep]*((2*min_SOC*Beta*(x[iStep]+2*y[iStep]+4*z[iStep])+(w_xx[iStep]+4*w_xy[iStep]+8*w_xz[iStep]+4*w_yy[iStep]+16*w_zz[iStep]+16*w_zy[iStep])*Beta^2) - (2*min_SOC*Beta*(x[iStep+1]+2*y[iStep+1]+4*z[iStep+1])+(w_xx[iStep+1]+4*w_xy[iStep+1]+8*w_xz[iStep+1]+4*w_yy[iStep+1]+16*w_zz[iStep+1]+16*w_zy[iStep+1])*Beta^2) + 2*(Beta*(x[iStep+1]+2*y[iStep+1]+4*z[iStep+1])-Beta*(x[iStep]+2*y[iStep]+4*z[iStep]))))
-    @constraint(M, deg_2[iStep=1:NSteps], deg[iStep] >= capacity[iStep]*((2*min_SOC*Beta*(x[iStep+1]+2*y[iStep+1]+4*z[iStep+1])+(w_xx[iStep+1]+4*w_xy[iStep+1]+8*w_xz[iStep+1]+4*w_yy[iStep+1]+16*w_zz[iStep+1]+16*w_zy[iStep+1])*Beta^2) - (2*min_SOC*Beta*(x[iStep]+2*y[iStep]+4*z[iStep])+(w_xx[iStep]+4*w_xy[iStep]+8*w_xz[iStep]+4*w_yy[iStep]+16*w_zz[iStep]+16*w_zy[iStep])*Beta^2) + 2*(Beta*(x[iStep]+2*y[iStep]+4*z[iStep])-Beta*(x[iStep+1]+2*y[iStep+1]+4*z[iStep+1]))))
+    @constraint(M, deg_1[iStep=1:NSteps], deg[iStep] >= ((2*min_SOC*Beta*(x[iStep]+2*y[iStep]+4*z[iStep])+(w_xx[iStep]+4*w_xy[iStep]+8*w_xz[iStep]+4*w_yy[iStep]+16*w_zz[iStep]+16*w_zy[iStep])*Beta^2) - (2*min_SOC*Beta*(x[iStep+1]+2*y[iStep+1]+4*z[iStep+1])+(w_xx[iStep+1]+4*w_xy[iStep+1]+8*w_xz[iStep+1]+4*w_yy[iStep+1]+16*w_zz[iStep+1]+16*w_zy[iStep+1])*Beta^2) + 2*(Beta*(x[iStep+1]+2*y[iStep+1]+4*z[iStep+1])-Beta*(x[iStep]+2*y[iStep]+4*z[iStep]))))
+    @constraint(M, deg_2[iStep=1:NSteps], deg[iStep] >= ((2*min_SOC*Beta*(x[iStep+1]+2*y[iStep+1]+4*z[iStep+1])+(w_xx[iStep+1]+4*w_xy[iStep+1]+8*w_xz[iStep+1]+4*w_yy[iStep+1]+16*w_zz[iStep+1]+16*w_zy[iStep+1])*Beta^2) - (2*min_SOC*Beta*(x[iStep]+2*y[iStep]+4*z[iStep])+(w_xx[iStep]+4*w_xy[iStep]+8*w_xz[iStep]+4*w_yy[iStep]+16*w_zz[iStep]+16*w_zy[iStep])*Beta^2) + 2*(Beta*(x[iStep]+2*y[iStep]+4*z[iStep])-Beta*(x[iStep+1]+2*y[iStep+1]+4*z[iStep+1]))))
 
     #CONSTRAINT ON REVAMPING
     @constraint(M, energy_capacity[iStage=1:NStages], capacity[Steps_stages[iStage]+2] == capacity[Steps_stages[iStage]+1]+revamping[iStage]-deg[Steps_stages[iStage]+1]*k_deg) #
@@ -131,7 +131,7 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     #@constraint(M, stop_discharge[iStage in 2:NStages, iStep in (Steps_stages[iStage]:(Steps_stages[iStage]+Steps_stop[iStage-1]))], e_discharge[iStep] <= (1-e[iStage])*max_P) 
 
     #@constraint(M, rev_3[iStage=1:NStages], capacity[Steps_stages[iStage]+2]>= capacity[Steps_stages[iStage]+1])
-    @constraint(M, rev[iStage=1:NStages], revamping[iStage] <= (max_SOH-min_SOH))
+    @constraint(M, rev[iStage=1:NStages], revamping[iStage] <= (max_SOH-min_SOH)/min_SOH)
     #@constraint(M, rev[iStage=1:NStages], revamping[iStage] <= (max_SOH-min_SOH)*e[iStage])
 
     #= CONSTRAINT SU VARIABILI AUSILIARIE PER ACQUISTO/VENDITA
