@@ -12,7 +12,7 @@ function data_saving(InputParameters::InputParam,ResultsOpt::Results_3)
     hour=string(now())
     a=replace(hour,':'=> '-')
 
-    nameF= "3 variabili, opzione 2"
+    nameF= "3 variabili, opzione 2, senza lower bound su S"
     nameFile="Summary " 
 
     folder = "$nameF"
