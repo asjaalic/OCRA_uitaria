@@ -81,7 +81,7 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @constraint(M, en_bal[iStep=1:NSteps+1], min_SOC + Beta*(x[iStep]+2*y[iStep]+4*z[iStep]) == soc[iStep]) 
     @constraint(M, en_square[iStep=1:NSteps+1], soc_quad[iStep] == min_SOC^2+ 2*min_SOC*Beta*(x[iStep]+2*y[iStep]+4*z[iStep])+(w_xx[iStep]+4*w_xy[iStep]+8*w_xz[iStep]+4*w_yy[iStep]+16*w_zz[iStep]+16*w_zy[iStep])*Beta^2)
 
-    @constraint(M, disc_capacity[iStep=1:NSteps+1], min_SOH + Beta_cap*(x_cap[iStep]+2*y_cap[iStep]+4*z_cap[iStep]) >= capacity[iStep]) 
+    @constraint(M, disc_capacity[iStep=1:NSteps+1], min_SOH + Beta_cap*(x_e[iStep]+2*y_e[iStep]+4*z_e[iStep]) >= capacity[iStep]) 
     
     # AUXILIARY FOR FORTET EXACT INEQUALITIES
     @constraint(M, xx_1[iStep=1:NSteps+1], w_xx[iStep] <= x[iStep])
@@ -129,7 +129,7 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @constraint(M, deg_1[iStep=1:NSteps], aux_deg[iStep] >= soc_quad[iStep] - soc_quad[iStep+1] + 2*(soc[iStep+1]-soc[iStep]))
     @constraint(M, deg_2[iStep=1:NSteps], aux_deg[iStep] >= soc_quad[iStep+1] - soc_quad[iStep] + 2*(soc[iStep]-soc[iStep+1]))
 
-    @constraint(M, final_deg[iStep=1:NSteps], deg[iStep] >= (min_SOH + Beta_cap*(x_cap[iStep]+2*y_cap[iStep]+4*z_cap[iStep]))*aux_deg[iStep])
+    @constraint(M, final_deg[iStep=1:NSteps], deg[iStep] >= (min_SOH + Beta_cap*(x_e[iStep]+2*y_e[iStep]+4*z_e[iStep]))*aux_deg[iStep])
 
     #CONSTRAINT ON REVAMPING
     @constraint(M, energy_capacity[iStage=1:NStages], capacity[Steps_stages[iStage]+2] == capacity[Steps_stages[iStage]+1]+revamping[iStage]-deg[Steps_stages[iStage]+1]*k_deg) #
@@ -181,8 +181,8 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
         #e,
         #rev_vendita,
         #rev_acquisto,
-        x_cap,
-        y_cap,
-        z_cap,
+        x_e,
+        y_e,
+        z_e,
       )
 end

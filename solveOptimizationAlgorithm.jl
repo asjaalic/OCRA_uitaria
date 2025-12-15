@@ -43,9 +43,9 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
 
     bin_op = zeros(NSteps+1)
 
-    x_cap = zeros(NSteps+1)
-    y_cap = zeros(NSteps+1)
-    z_cap = zeros(NSteps+1)
+    x_e = zeros(NSteps+1)
+    y_e = zeros(NSteps+1)
+    z_e = zeros(NSteps+1)
 
     problem = BuildStageProblem_3(InputParameters, SolverParameters, Battery)
 
@@ -88,9 +88,9 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
 
             bin_op[iStep] = JuMP.value(bin_op.k[iStep])
 
-            x_cap[iStep] = JuMP.value(problem.x_cap[iStep])
-            y_cap[iStep] = JuMP.value(problem.y_cap[iStep])
-            z_cap[iStep] = JuMP.value(problem.z_cap[iStep])
+            x_e[iStep] = JuMP.value(problem.x_e[iStep])
+            y_e[iStep] = JuMP.value(problem.y_e[iStep])
+            z_e[iStep] = JuMP.value(problem.z_e[iStep])
 
         end
 
@@ -113,9 +113,9 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
 
         cap[end] = JuMP.value(problem.capacity[end])
 
-        x_cap[end] = JuMP.value(problem.x_cap[end])
-        y_cap[end] = JuMP.value(problem.y_cap[end])
-        z_cap[end] = JuMP.value(problem.z_cap[end])
+        x_e[end] = JuMP.value(problem.x_e[end])
+        y_e[end] = JuMP.value(problem.y_e[end])
+        z_e[end] = JuMP.value(problem.z_e[end])
      
         for iStage=1:NStages
             rev[iStage] = JuMP.value(problem.revamping[iStage])
@@ -172,9 +172,9 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
         #e,
         #rev_vendita,
         #rev_acquisto,
-        x_cap,
-        y_cap,
-        z_cap,
+        x_e,
+        y_e,
+        z_e,
     )
 
 end
