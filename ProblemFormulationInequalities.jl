@@ -8,7 +8,7 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @unpack (min_SOC, max_SOC, min_P, max_P, Eff_charge, Eff_discharge, max_SOH, min_SOH, Nfull, fix) = Battery ;         
 
     k_deg = 1/(2*Nfull)
-    Small = 0.64
+    Small = 1
     disc = 7
     Beta = (max_SOC-min_SOC)/disc
 
