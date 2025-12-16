@@ -8,7 +8,7 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @unpack (min_SOC, max_SOC, min_P, max_P, Eff_charge, Eff_discharge, max_SOH, min_SOH, Nfull, fix) = Battery ;         
 
     k_deg = 1/(2*Nfull)
-    Small = 0.64
+    Small = 1
     disc = 7
     Beta = (max_SOC-min_SOC)/disc
 
@@ -28,7 +28,6 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @variable(M, bin_op[iStep=1:NSteps], Bin, base_name = "Binary_operation")
     
     @variable(M, 0 <= deg[iStep=1:NSteps] <= Small*max_SOH/min_SOH, base_name = "Degradation")
-    @variable(M, 0 <= aux_deg[iStep=1:NSteps] <= Small, base_name = "Aux_deg")
 
     @variable(M, 0 <= revamping[iStage=1:NStages] <= (max_SOH-min_SOH)/max_SOC, base_name = "Revamping")
     @variable(M, min_SOH/min_SOH <= capacity[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Energy_Capacity")        #energy_Capacity     [iStage=1:NStages]
@@ -53,6 +52,14 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @variable(M, 0 <= h_x[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_1")
     @variable(M, 0 <= h_y[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_2")
     @variable(M, 0 <= h_z[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_3")
+
+    @variable(M, 0 <= h_xx[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_xx")
+    @variable(M, 0 <= h_xy[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_xy")
+    @variable(M, 0 <= h_xz[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_xz")
+    @variable(M, 0 <= h_yy[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_yy")
+    @variable(M, 0 <= h_zz[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_zz")
+    @variable(M, 0 <= h_yz[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_yz")
+
 
     # DEFINE OBJECTIVE function - length(Battery_price) = NStages+1=21
     @objective(
@@ -112,15 +119,44 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @constraint(M, h_z_3[iStep=1:NSteps+1], h_z[iStep]>= capacity[iStep]-max_SOH/min_SOH*(1-z[iStep]))
     @constraint(M, h_z_4[iStep=1:NSteps+1], h_z[iStep]<= capacity[iStep]-min_SOH/min_SOH*(1-z[iStep]))
 
+    #ADDITIONAL CONSTRAINTS FOR DEGRADATION (BILINEAR TERMS)
+    @constraint(M, h_xx_1[iStep=1:NSteps+1], h_xx[iStep]>= min_SOH/min_SOH*w_xx[iStep])
+    @constraint(M, h_xx_2[iStep=1:NSteps+1], h_xx[iStep]<= max_SOH/min_SOH*w_xx[iStep])
+    @constraint(M, h_xx_3[iStep=1:NSteps+1], h_xx[iStep]>= capacity[iStep]-max_SOH/min_SOH*(1-w_xx[iStep]))
+    @constraint(M, h_xx_4[iStep=1:NSteps+1], h_xx[iStep]<= capacity[iStep]-min_SOH/min_SOH*(1-w_xx[iStep]))
+
+    @constraint(M, h_xy_1[iStep=1:NSteps+1], h_xy[iStep]>= min_SOH/min_SOH*w_xy[iStep])
+    @constraint(M, h_xy_2[iStep=1:NSteps+1], h_xy[iStep]<= max_SOH/min_SOH*w_xy[iStep])
+    @constraint(M, h_xy_3[iStep=1:NSteps+1], h_xy[iStep]>= capacity[iStep]-max_SOH/min_SOH*(1-w_xy[iStep]))
+    @constraint(M, h_xy_4[iStep=1:NSteps+1], h_xy[iStep]<= capacity[iStep]-min_SOH/min_SOH*(1-w_xy[iStep]))
+
+    @constraint(M, h_xz_1[iStep=1:NSteps+1], h_xz[iStep]>= min_SOH/min_SOH*w_xz[iStep])
+    @constraint(M, h_xz_2[iStep=1:NSteps+1], h_xz[iStep]<= max_SOH/min_SOH*w_xz[iStep])
+    @constraint(M, h_xz_3[iStep=1:NSteps+1], h_xz[iStep]>= capacity[iStep]-max_SOH/min_SOH*(1-w_xz[iStep]))
+    @constraint(M, h_xz_4[iStep=1:NSteps+1], h_xz[iStep]<= capacity[iStep]-min_SOH/min_SOH*(1-w_xz[iStep]))
+
+    @constraint(M, h_yy_1[iStep=1:NSteps+1], h_yy[iStep]>= min_SOH/min_SOH*w_yy[iStep])
+    @constraint(M, h_yy_2[iStep=1:NSteps+1], h_yy[iStep]<= max_SOH/min_SOH*w_yy[iStep])
+    @constraint(M, h_yy_3[iStep=1:NSteps+1], h_yy[iStep]>= capacity[iStep]-max_SOH/min_SOH*(1-w_yy[iStep]))
+    @constraint(M, h_yy_4[iStep=1:NSteps+1], h_yy[iStep]<= capacity[iStep]-min_SOH/min_SOH*(1-w_yy[iStep]))
+
+    @constraint(M, h_zz_1[iStep=1:NSteps+1], h_zz[iStep]>= min_SOH/min_SOH*w_zz[iStep])
+    @constraint(M, h_zz_2[iStep=1:NSteps+1], h_zz[iStep]<= max_SOH/min_SOH*w_zz[iStep])
+    @constraint(M, h_zz_3[iStep=1:NSteps+1], h_zz[iStep]>= capacity[iStep]-max_SOH/min_SOH*(1-w_zz[iStep]))
+    @constraint(M, h_zz_4[iStep=1:NSteps+1], h_zz[iStep]<= capacity[iStep]-min_SOH/min_SOH*(1-w_zz[iStep]))
+
+    @constraint(M, h_yz_1[iStep=1:NSteps+1], h_yz[iStep]>= min_SOH/min_SOH*w_zy[iStep])
+    @constraint(M, h_yz_2[iStep=1:NSteps+1], h_yz[iStep]<= max_SOH/min_SOH*w_zy[iStep])
+    @constraint(M, h_yz_3[iStep=1:NSteps+1], h_yz[iStep]>= capacity[iStep]-max_SOH/min_SOH*(1-w_zy[iStep]))
+    @constraint(M, h_yz_4[iStep=1:NSteps+1], h_yz[iStep]<= capacity[iStep]-min_SOH/min_SOH*(1-w_zy[iStep]))
+
     #binary variable for operation
     @constraint(M, charging[iStep=1:NSteps], e_charge[iStep] <= max_P*NHoursStep*(1-bin_op[iStep]))
     @constraint(M, discharging[iStep=1:NSteps], e_discharge[iStep] <= max_P*NHoursStep*bin_op[iStep])
 
     # CONSTRAINTS ON DEGRADATION
-    @constraint(M, deg_1[iStep=1:NSteps], aux_deg[iStep] >= soc_quad[iStep] - soc_quad[iStep+1] + 2*(soc[iStep+1]-soc[iStep]))
-    @constraint(M, deg_2[iStep=1:NSteps], aux_deg[iStep] >= soc_quad[iStep+1] - soc_quad[iStep] + 2*(soc[iStep]-soc[iStep+1]))
-
-    @constraint(M, final_deg[iStep=1:NSteps], deg[iStep] >= capacity[iStep]*aux_deg[iStep])
+    @constraint(M, deg_1[iStep=1:NSteps], deg[iStep] >= (2*min_SOC*Beta)*(h_x[iStep+1]-h_x[iStep]+2*(h_y[iStep+1]-h_y[iStep])+4*(h_z[iStep+1]-h_z[iStep]))+Beta*(h_xx[iStep+1]-h_xx[iStep]+4*(h_yy[iStep+1]-h_yy[iStep])+8*(h_xz[iStep+1]-h_xz[iStep])+4*(h_yy[iStep+1]-h_yy[iStep])+16*(h_zz[iStep+1]-h_zz[iStep])+16*(h_yz[iStep+1]-h_yz[iStep])))
+    @constraint(M, deg_2[iStep=1:NSteps], deg[iStep] >= (2*min_SOC*Beta)*(h_x[iStep]-h_x[iStep+1]+2*(h_y[iStep]-h_y[iStep+1])+4*(h_z[iStep]-h_z[iStep+1]))+Beta*(h_xx[iStep]-h_xx[iStep+1]+4*(h_yy[iStep]-h_yy[iStep+1])+8*(h_xz[iStep]-h_xz[iStep+1])+4*(h_yy[iStep]-h_yy[iStep+1])+16*(h_zz[iStep]-h_zz[iStep+1])+16*(h_yz[iStep]-h_yz[iStep+1])))
 
     #CONSTRAINT ON REVAMPING
     @constraint(M, energy_capacity[iStage=1:NStages], capacity[Steps_stages[iStage]+2] == capacity[Steps_stages[iStage]+1]+revamping[iStage]-deg[Steps_stages[iStage]+1]*k_deg) #
@@ -154,28 +190,28 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
         e_discharge,
         bin_op,
         deg,
-        aux_deg,
         x,
         y,
         z,
         h_x,
         h_y,
         h_z,
-        #u,
         w_xx,
         w_yy,
         w_zz,
         w_xy,
         w_xz,
         w_zy,
-        #w_uu,
-        #w_xu,
-        #w_yu,
-        #w_zu,
         capacity,
         revamping,
         #e,
         #rev_vendita,
         #rev_acquisto,
+        h_xx,
+        h_xy,
+        h_xz,
+        h_yy,
+        h_zz,
+        h_yz,
       )
 end
