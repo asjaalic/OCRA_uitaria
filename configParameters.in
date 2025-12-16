@@ -1,6 +1,6 @@
 
 #problem definition
-    NYears = 10
+    NYears = 1
     NMonths = 6
     NHoursStep = 1.0
     Hours_rolling = 48
