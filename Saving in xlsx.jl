@@ -12,11 +12,7 @@ function data_saving(InputParameters::InputParam,ResultsOpt::Results_3)
     hour=string(now())
     a=replace(hour,':'=> '-')
 
-<<<<<<< Updated upstream
-    nameF= "3 variabili, opzione 2, senza lower bound su S"
-=======
-    nameF= "3 variabili, opzione 2, mid-costs, $min_SoC min_SoC"
->>>>>>> Stashed changes
+    nameF= "3 variabili, opzione 2, min Soc $min_SOC, max SoH $max_SOH"
     nameFile="Summary " 
 
     folder = "$nameF"

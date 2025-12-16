@@ -112,8 +112,8 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @constraint(M, h_z_4[iStep=1:NSteps+1], h_z[iStep]<= capacity[iStep]-min_SOH/min_SOH*(1-z[iStep]))
 
     #binary variable for operation
-    @constraint(M, charging[iStep=1:NSteps], e_charge[iStep] <= max_P*NHoursStep*(1-bin_op[iStep]))
-    @constraint(M, discharging[iStep=1:NSteps], e_discharge[iStep] <= max_P*NHoursStep*bin_op[iStep])
+    #@constraint(M, charging[iStep=1:NSteps], e_charge[iStep] <= max_P*NHoursStep*(1-bin_op[iStep]))
+    #@constraint(M, discharging[iStep=1:NSteps], e_discharge[iStep] <= max_P*NHoursStep*bin_op[iStep])
 
     # CONSTRAINTS ON DEGRADATION
     @constraint(M, deg_1[iStep=1:NSteps], deg[iStep] >= capacity[iStep]*((2*min_SOC*Beta*(x[iStep]+2*y[iStep]+4*z[iStep])+(w_xx[iStep]+4*w_xy[iStep]+8*w_xz[iStep]+4*w_yy[iStep]+16*w_zz[iStep]+16*w_zy[iStep])*Beta^2) - (2*min_SOC*Beta*(x[iStep+1]+2*y[iStep+1]+4*z[iStep+1])+(w_xx[iStep+1]+4*w_xy[iStep+1]+8*w_xz[iStep+1]+4*w_yy[iStep+1]+16*w_zz[iStep+1]+16*w_zy[iStep+1])*Beta^2) + 2*(Beta*(x[iStep+1]+2*y[iStep+1]+4*z[iStep+1])-Beta*(x[iStep]+2*y[iStep]+4*z[iStep]))))
