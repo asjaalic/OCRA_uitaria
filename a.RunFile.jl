@@ -51,7 +51,7 @@ to = TimerOutput()
   Steps_stop = [87 81 83 81 87 71 85 84 87 80 85 80 85 79 87 74 85 90 81]                      # 3 weeks
   NSteps = Steps_stages[NStages+1]
 
-  Battery_price_purchase = read_csv("Battery_decreasing_prices_mid.csv",case.DataPath)
+  Battery_price_purchase = read_csv("Battery_decreasing_prices_high.csv",case.DataPath)
   Battery_price_sale = set_price(Battery_price_purchase,cost);
   
   Power_prices = read_csv("Scenario_1.csv", case.DataPath);    
@@ -72,7 +72,7 @@ end
 
 # SAVE DATA IN EXCEL FILES
 if runMode.excel_savings
-  cartella = "C:\\GitHub\\OCRA_3.0_unitaria\\Results_comparison"
+  cartella = "C:\\GitHub_Asja\\OCRA_unitary\\Results_15_dicembre"
   cd(cartella)
   Saving = data_saving(InputParameters,ResultsOpt)
 else
