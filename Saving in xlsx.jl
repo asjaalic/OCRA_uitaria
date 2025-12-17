@@ -5,7 +5,7 @@
 function data_saving(InputParameters::InputParam,ResultsOpt::Results_3)
 
    @unpack (NYears, NMonths, NStages, Big, NHoursStep, bin) = InputParameters;       #NSteps,NHoursStage  
-   @unpack (e_charge, e_discharge, rev, cap, soc, soc_quad, deg, aux_deg, deg_stage, gain_stage, cost_rev, x, y, z, h_x, h_y, h_z, w_xx, w_yy, w_zz, w_xy, w_xz, w_zy, bin_op) = ResultsOpt;
+   @unpack (e_charge, e_discharge, rev, cap, soc, soc_quad, deg, deg_stage, gain_stage, cost_rev, x, y, z, h_x, h_y, h_z, w_xx, w_yy, w_zz, w_xy, w_xz, w_zy, bin_op, h_x, h_y, h_z, h_xx, h_xy, h_xz, h_yy, h_zz, h_yz) = ResultsOpt;
    #@unpack (e_charge, e_discharge, rev, cap, soc, soc_quad, deg, aux_deg, deg_stage, gain_stage, cost_rev, e, rev_vendita, rev_acquisto, x, y, z, h_x, h_y, h_z, w_xx, w_yy, w_zz, w_xy, w_xz, w_zy) = ResultsOpt;
    @unpack (min_SOC, max_SOC, min_P, max_P, Eff_charge, Eff_discharge, max_SOH, min_SOH, Nfull,fix,cost ) = Battery ; 
 
@@ -68,7 +68,7 @@ function data_saving(InputParameters::InputParam,ResultsOpt::Results_3)
         steps[!, "Discharge MWh"] = e_discharge[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
         steps[!, "SOC_quad MWh"] = soc_quad[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
         steps[!, "Deg MWh"] = deg[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
-        steps[!, "Aux Deg MWh"] = aux_deg[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
+        #steps[!, "Aux Deg MWh"] = aux_deg[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
         steps[!, "Bin operation "] = bin_op[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
 
         steps[!, "x"] = x[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
@@ -77,6 +77,12 @@ function data_saving(InputParameters::InputParam,ResultsOpt::Results_3)
         steps[!, "h_x"] = h_x[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
         steps[!, "h_y"] = h_y[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
         steps[!, "h_z"] = h_z[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
+        steps[!, "h_xx"] = h_xx[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
+        steps[!, "h_xy"] = h_xy[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
+        steps[!, "h_xz"] = h_xz[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
+        steps[!, "h_yy"] = h_yy[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
+        steps[!, "h_zz"] = h_zz[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
+        steps[!, "h_yz"] = h_yz[(Steps_stages[iStage]+1):(Steps_stages[iStage+1])]
 
         XLSX.writetable("$iStage stage $a.xlsx", overwrite=true,                                       #$nameFile
         results_steps = (collect(DataFrames.eachcol(steps)),DataFrames.names(steps)),

@@ -42,12 +42,12 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @variable(M, y[iStep=1:NSteps+1], Bin, base_name = "Binary_2")
     @variable(M, z[iStep=1:NSteps+1], Bin, base_name = "Binary_3")
 
-    @variable(M, 0<= w_xx[iStep=1:NSteps+1] <= 1, base_name = "xx")
-    @variable(M, 0<= w_yy[iStep=1:NSteps+1] <= 1, base_name = "yy")
-    @variable(M, 0<= w_zz[iStep=1:NSteps+1] <= 1, base_name = "zz")
-    @variable(M, 0<= w_xy[iStep=1:NSteps+1] <= 1, base_name = "xy")
-    @variable(M, 0<= w_xz[iStep=1:NSteps+1] <= 1, base_name = "xz")
-    @variable(M, 0<= w_zy[iStep=1:NSteps+1] <= 1, base_name = "yz")
+    @variable(M, w_xx[iStep=1:NSteps+1] , Bin, base_name = "xx")
+    @variable(M, w_yy[iStep=1:NSteps+1], Bin, base_name = "yy")
+    @variable(M, w_zz[iStep=1:NSteps+1], Bin, base_name = "zz")
+    @variable(M, w_xy[iStep=1:NSteps+1], Bin, base_name = "xy")
+    @variable(M, w_xz[iStep=1:NSteps+1], Bin, base_name = "xz")
+    @variable(M, w_zy[iStep=1:NSteps+1], Bin, base_name = "yz")
     
     @variable(M, 0 <= h_x[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_1")
     @variable(M, 0 <= h_y[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_2")
@@ -151,8 +151,8 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @constraint(M, h_yz_4[iStep=1:NSteps+1], h_yz[iStep]<= capacity[iStep]-min_SOH/min_SOH*(1-w_zy[iStep]))
 
     #binary variable for operation
-    @constraint(M, charging[iStep=1:NSteps], e_charge[iStep] <= max_P*NHoursStep*(1-bin_op[iStep]))
-    @constraint(M, discharging[iStep=1:NSteps], e_discharge[iStep] <= max_P*NHoursStep*bin_op[iStep])
+    #@constraint(M, charging[iStep=1:NSteps], e_charge[iStep] <= max_P*NHoursStep*(1-bin_op[iStep]))
+    #@constraint(M, discharging[iStep=1:NSteps], e_discharge[iStep] <= max_P*NHoursStep*bin_op[iStep])
 
     # CONSTRAINTS ON DEGRADATION
     @constraint(M, deg_1[iStep=1:NSteps], deg[iStep] >= (2*min_SOC*Beta)*(h_x[iStep+1]-h_x[iStep]+2*(h_y[iStep+1]-h_y[iStep])+4*(h_z[iStep+1]-h_z[iStep]))+Beta*(h_xx[iStep+1]-h_xx[iStep]+4*(h_yy[iStep+1]-h_yy[iStep])+8*(h_xz[iStep+1]-h_xz[iStep])+4*(h_yy[iStep+1]-h_yy[iStep])+16*(h_zz[iStep+1]-h_zz[iStep])+16*(h_yz[iStep+1]-h_yz[iStep])))
