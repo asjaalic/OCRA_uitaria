@@ -155,8 +155,8 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     #@constraint(M, discharging[iStep=1:NSteps], e_discharge[iStep] <= max_P*NHoursStep*bin_op[iStep])
 
     # CONSTRAINTS ON DEGRADATION
-    @constraint(M, deg_1[iStep=1:NSteps], deg[iStep] >= (2*min_SOC*Beta)*(h_x[iStep+1]-h_x[iStep]+2*(h_y[iStep+1]-h_y[iStep])+4*(h_z[iStep+1]-h_z[iStep]))+Beta*(h_xx[iStep+1]-h_xx[iStep]+4*(h_yy[iStep+1]-h_yy[iStep])+8*(h_xz[iStep+1]-h_xz[iStep])+4*(h_yy[iStep+1]-h_yy[iStep])+16*(h_zz[iStep+1]-h_zz[iStep])+16*(h_yz[iStep+1]-h_yz[iStep])))
-    @constraint(M, deg_2[iStep=1:NSteps], deg[iStep] >= (2*min_SOC*Beta)*(h_x[iStep]-h_x[iStep+1]+2*(h_y[iStep]-h_y[iStep+1])+4*(h_z[iStep]-h_z[iStep+1]))+Beta*(h_xx[iStep]-h_xx[iStep+1]+4*(h_yy[iStep]-h_yy[iStep+1])+8*(h_xz[iStep]-h_xz[iStep+1])+4*(h_yy[iStep]-h_yy[iStep+1])+16*(h_zz[iStep]-h_zz[iStep+1])+16*(h_yz[iStep]-h_yz[iStep+1])))
+    @constraint(M, deg_1[iStep=1:NSteps], deg[iStep] >= (2*min_SOC*Beta-2*Beta)*(h_x[iStep+1]-h_x[iStep]+2*(h_y[iStep+1]-h_y[iStep])+4*(h_z[iStep+1]-h_z[iStep]))+Beta*(h_xx[iStep+1]-h_xx[iStep]+4*(h_yy[iStep+1]-h_yy[iStep])+8*(h_xz[iStep+1]-h_xz[iStep])+4*(h_yy[iStep+1]-h_yy[iStep])+16*(h_zz[iStep+1]-h_zz[iStep])+16*(h_yz[iStep+1]-h_yz[iStep])))
+    @constraint(M, deg_2[iStep=1:NSteps], deg[iStep] >= (2*min_SOC*Beta-2*Beta)*(h_x[iStep]-h_x[iStep+1]+2*(h_y[iStep]-h_y[iStep+1])+4*(h_z[iStep]-h_z[iStep+1]))+Beta*(h_xx[iStep]-h_xx[iStep+1]+4*(h_yy[iStep]-h_yy[iStep+1])+8*(h_xz[iStep]-h_xz[iStep+1])+4*(h_yy[iStep]-h_yy[iStep+1])+16*(h_zz[iStep]-h_zz[iStep+1])+16*(h_yz[iStep]-h_yz[iStep+1])))
 
     #CONSTRAINT ON REVAMPING
     @constraint(M, energy_capacity[iStage=1:NStages], capacity[Steps_stages[iStage]+2] == capacity[Steps_stages[iStage]+1]+revamping[iStage]-deg[Steps_stages[iStage]+1]*k_deg) #
