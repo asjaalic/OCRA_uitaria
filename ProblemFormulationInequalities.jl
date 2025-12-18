@@ -13,7 +13,7 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     Beta = (max_SOC-min_SOC)/disc
 
     M = Model(Gurobi.Optimizer)
-    set_optimizer_attribute(M, "MIPGap", 0.05)
+    set_optimizer_attribute(M, "MIPGap", 0.01)
     set_optimizer_attribute(M, "Method", 0)
     set_optimizer_attribute(M, "NorelHeurTime", 54)
     set_optimizer_attribute(M, "Aggregate", 0)
@@ -42,12 +42,12 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @variable(M, y[iStep=1:NSteps+1], Bin, base_name = "Binary_2")
     @variable(M, z[iStep=1:NSteps+1], Bin, base_name = "Binary_3")
 
-    @variable(M, 0<= w_xx[iStep=1:NSteps+1] <= 1, base_name = "xx")
-    @variable(M, 0<= w_yy[iStep=1:NSteps+1] <= 1, base_name = "yy")
-    @variable(M, 0<= w_zz[iStep=1:NSteps+1] <= 1, base_name = "zz")
-    @variable(M, 0<= w_xy[iStep=1:NSteps+1] <= 1, base_name = "xy")
-    @variable(M, 0<= w_xz[iStep=1:NSteps+1] <= 1, base_name = "xz")
-    @variable(M, 0<= w_zy[iStep=1:NSteps+1] <= 1, base_name = "yz")
+    @variable(M, w_xx[iStep=1:NSteps+1], Bin, base_name = "xx")
+    @variable(M, w_yy[iStep=1:NSteps+1], Bin, base_name = "yy")
+    @variable(M, w_zz[iStep=1:NSteps+1], Bin, base_name = "zz")
+    @variable(M, w_xy[iStep=1:NSteps+1], Bin, base_name = "xy")
+    @variable(M, w_xz[iStep=1:NSteps+1], Bin, base_name = "xz")
+    @variable(M, w_zy[iStep=1:NSteps+1], Bin, base_name = "yz")
     
     @variable(M, 0 <= h_x[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_1")
     @variable(M, 0 <= h_y[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_2")
