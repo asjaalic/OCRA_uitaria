@@ -6,11 +6,11 @@
     Eff_discharge = 0.96
     min_P = 0.0
     max_P = 1.0
-    max_SOH = 1.15
+    max_SOH = 1.05
     min_SOH = 1
     Nfull = 10000
-    fix = 980
-    cost = 1
+    fix = 950
+    cost = 0.95
 
 
 

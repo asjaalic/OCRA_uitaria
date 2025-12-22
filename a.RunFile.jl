@@ -47,8 +47,9 @@ to = TimerOutput()
   SolverParameters = set_solverParameters()
 
   # Read power prices from a file [€/MWh]
-  Steps_stages = [0 1132 2259 3397 4465 5650 6723 7806 8843 9953 10946 12124 13171 14283 15273 16385 17375 18460 19470 20496 21505]
-  Steps_stop = [124 128 141 127 130 120 107 111 112 127 129 115 101 115 101 123 100 120 97]                       # 3 weeks
+  #Steps_stages = [0 1132 2259 3397 4465 5650 6723 7806 8843 9953 10946 12124 13171 14283 15273 16385 17375 18460 19470 20496 21505] #every semester
+  Steps_stages = [0 2259 4465 6723 8843 10946 13171 15273 17375 19470 21505] # YEARLY REVAMPING
+  Steps_stop = [124 141 130 107 112 129 101 101 100 97]                       # 3 weeks
   NSteps = Steps_stages[NStages+1]
 
   Battery_price_purchase = read_csv("Mid-cost projections 2026-2036.csv",case.DataPath)
