@@ -9,7 +9,7 @@
 #NSteps = 87600
 
 #General
-    Big = 1.05
+    Big = 1.15
     conv = 0.001
     bin = 3
 
