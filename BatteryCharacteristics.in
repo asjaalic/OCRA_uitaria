@@ -10,7 +10,7 @@
     min_SOH = 1
     Nfull = 10000
     fix = 980
-    cost = 0.985
+    cost = 1
 
 
 
