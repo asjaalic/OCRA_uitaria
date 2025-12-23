@@ -14,9 +14,9 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
 
     M = Model(Gurobi.Optimizer)
     set_optimizer_attribute(M, "MIPGap", 0.01)
-    set_optimizer_attribute(M, "Method", 0)
-    set_optimizer_attribute(M, "NorelHeurTime", 54)
-    set_optimizer_attribute(M, "Aggregate", 0)
+    set_optimizer_attribute(M, "MIPFocus", 2)
+    set_optimizer_attribute(M, "NorelHeurTime", 15)
+    set_optimizer_attribute(M, "Cuts", 2)
 
     # DEFINE VARIABLES
 
@@ -71,7 +71,7 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
       - sum(Battery_price_purchase[iStage]*(capacity[Steps_stages[iStage]+2] + rev_acquisto[iStage]) for iStage=2:NStages) 
       + sum(Battery_price_sale[iStage]*(capacity[Steps_stages[iStage]+1] - rev_vendita[iStage]) for iStage=2:NStages) +
       Battery_price_sale[NStages+1]*(capacity[end]- min_SOH/min_SOH)  
-      #-sum(fix*e[iStage] for iStage=1:NStages) 
+      -sum(fix*e[iStage] for iStage=1:NStages) 
       + 2300    
       )
          
@@ -171,6 +171,7 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @constraint(M, rev_3[iStage=1:NStages], capacity[Steps_stages[iStage]+2]>= capacity[Steps_stages[iStage]+1])
    #@constraint(M, rev[iStage=1:NStages], revamping[iStage] <= (max_SOH-min_SOH))
     @constraint(M, rev[iStage=1:NStages], revamping[iStage] <= (max_SOH-min_SOH)*e[iStage])
+    @constraint(M, first_e[iStage=1], e[iStage] == 1)
 
     #CONSTRAINT SU VARIABILI AUSILIARIE PER ACQUISTO/VENDITA
     @constraint(M, vendita[iStage=1], rev_vendita[iStage] == 0)
