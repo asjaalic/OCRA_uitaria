@@ -13,7 +13,7 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     Beta = (max_SOC-min_SOC)/disc
 
     M = Model(Gurobi.Optimizer)
-    set_optimizer_attribute(M, "MIPGap", 0.01)
+    set_optimizer_attribute(M, "MIPGap", 0.05)
     set_optimizer_attribute(M, "MIPFocus", 2)
     set_optimizer_attribute(M, "NorelHeurTime", 15)
     set_optimizer_attribute(M, "Cuts", 2)
