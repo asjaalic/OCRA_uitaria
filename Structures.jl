@@ -90,9 +90,9 @@ struct BuildStageProblem_3
     w_zy::Any
     capacity::Any
     revamping::Any
-    #e::Any
-    #rev_vendita::Any
-    #rev_acquisto::Any
+    e::Any
+    rev_vendita::Any
+    rev_acquisto::Any
 end
 
 struct Results_3
@@ -121,9 +121,9 @@ struct Results_3
     h_z::Any
     rev::Any
     cap::Any
-    #e::Any
-    #rev_vendita::Any
-    #rev_acquisto::Any
+    e::Any
+    rev_vendita::Any
+    rev_acquisto::Any
 end
 
 struct BuildStageProblem_4

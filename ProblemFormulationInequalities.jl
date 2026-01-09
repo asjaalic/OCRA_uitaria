@@ -8,15 +8,23 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @unpack (min_SOC, max_SOC, min_P, max_P, Eff_charge, Eff_discharge, max_SOH, min_SOH, Nfull, fix) = Battery ;         
 
     k_deg = 1/(2*Nfull)
-    Small = 0.64
+    Small = 1
     disc = 7
     Beta = (max_SOC-min_SOC)/disc
 
-    M = Model(Gurobi.Optimizer)
+    M = direct_model(Gurobi.Optimizer())
     set_optimizer_attribute(M, "MIPGap", 0.05)
     set_optimizer_attribute(M, "Method", 0)
-    set_optimizer_attribute(M, "NorelHeurTime", 54)
-    set_optimizer_attribute(M, "Aggregate", 0)
+    #set_optimizer_attribute(M, "NorelHeurTime", 54)
+    set_optimizer_attribute(M, "Cuts", 0)
+    set_optimizer_attribute(M, "MIPFocus", 1)
+
+    set_optimizer_attribute(M, "Presolve", 2)
+    set_optimizer_attribute(M, "PreSparsify", 1)
+
+    set_optimizer_attribute(M, "Threads", 4)
+    set_optimizer_attribute(M, "NodefileStart", 10.0) # Swap to disk after 10GB
+    set_optimizer_attribute(M, "SoftMemLimit", 28.0)
 
     # DEFINE VARIABLES
 
@@ -32,10 +40,10 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
 
     @variable(M, 0 <= revamping[iStage=1:NStages] <= (max_SOH-min_SOH)/max_SOC, base_name = "Revamping")
     @variable(M, min_SOH/min_SOH <= capacity[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Energy_Capacity")        #energy_Capacity     [iStage=1:NStages]
-    #@variable(M, e[iStage=1:NStages], Bin, base_name ="Binary Revamp")max_SOH/min_SOH
+    @variable(M, e[iStage=1:NStages], Bin, base_name ="Binary Revamp")max_SOH/min_SOH
 
-    #@variable(M, 0<= rev_vendita[iStage=1:NStages] <= max_SOH/min_SOH, base_name = "Vendita rev")
-    #@variable(M, -max_SOH/min_SOH <= rev_acquisto[iStage=1:NStages] <= 0, base_name = "Acquisto rev")
+    @variable(M, 0<= rev_vendita[iStage=1:NStages] <= max_SOH/min_SOH, base_name = "Vendita rev")
+    @variable(M, -max_SOH/min_SOH <= rev_acquisto[iStage=1:NStages] <= 0, base_name = "Acquisto rev")
 
     #VARIABLES FOR DISCRETIZATION of Stored Energy
 
@@ -60,11 +68,11 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
       MathOptInterface.MAX_SENSE, 
       sum(Power_prices[iStep]*(e_discharge[iStep]*Eff_discharge-e_charge[iStep]/Eff_charge) for iStep=1:NSteps) -               # 
       Battery_price_purchase[1]*(revamping[1]) 
-      -sum(Battery_price_purchase[iStage]*(revamping[iStage]) for iStage=1:NStages) +
-      #sum(Battery_price_purchase[iStage]*(capacity[Steps_stages[iStage]+2] + rev_acquisto[iStage]) for iStage=2:NStages) +
-      #sum(Battery_price_sale[iStage]*(capacity[Steps_stages[iStage]+1] - rev_vendita[iStage]) for iStage=2:NStages) +
+      #-sum(Battery_price_purchase[iStage]*(revamping[iStage]) for iStage=1:NStages) +
+      -sum(Battery_price_purchase[iStage]*(capacity[Steps_stages[iStage]+2] + rev_acquisto[iStage]) for iStage=2:NStages) +
+      sum(Battery_price_sale[iStage]*(capacity[Steps_stages[iStage]+1] - rev_vendita[iStage]) for iStage=2:NStages) +
       Battery_price_sale[NStages+1]*(capacity[end]- min_SOH/min_SOH)  
-      #-sum(fix*e[iStage] for iStage=1:NStages) 
+      -sum(fix*e[iStage] for iStage=1:NStages) 
       + 2300    
       )
          
@@ -129,22 +137,22 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
 
     @constraint(M,en_cap1[iStage in 1:NStages, iStep in ((Steps_stages[iStage]+2):Steps_stages[iStage+1])], capacity[iStep+1]== capacity[iStep]-deg[iStep]*k_deg)
 
-    #@constraint(M, stop_charge[iStage in 2:NStages, iStep in (Steps_stages[iStage]:(Steps_stages[iStage]+Steps_stop[iStage-1]))], e_charge[iStep] <= (1-e[iStage])*max_P)
+    @constraint(M, stop_charge[iStage in 2:NStages, iStep in (Steps_stages[iStage]:(Steps_stages[iStage]+Steps_stop[iStage-1]))], e_charge[iStep] <= (1-e[iStage])*max_P)
     
-    #@constraint(M, stop_discharge[iStage in 2:NStages, iStep in (Steps_stages[iStage]:(Steps_stages[iStage]+Steps_stop[iStage-1]))], e_discharge[iStep] <= (1-e[iStage])*max_P) 
+    @constraint(M, stop_discharge[iStage in 2:NStages, iStep in (Steps_stages[iStage]:(Steps_stages[iStage]+Steps_stop[iStage-1]))], e_discharge[iStep] <= (1-e[iStage])*max_P) 
 
-    #@constraint(M, rev_3[iStage=1:NStages], capacity[Steps_stages[iStage]+2]>= capacity[Steps_stages[iStage]+1])
-    @constraint(M, rev[iStage=1:NStages], revamping[iStage] <= (max_SOH-min_SOH))
-    #@constraint(M, rev[iStage=1:NStages], revamping[iStage] <= (max_SOH-min_SOH)*e[iStage])
+    @constraint(M, rev_3[iStage=1:NStages], capacity[Steps_stages[iStage]+2]>= capacity[Steps_stages[iStage]+1])
+    #@constraint(M, rev[iStage=1:NStages], revamping[iStage] <= (max_SOH-min_SOH))
+    @constraint(M, rev[iStage=1:NStages], revamping[iStage] <= (max_SOH-min_SOH)*e[iStage])
 
-    #= CONSTRAINT SU VARIABILI AUSILIARIE PER ACQUISTO/VENDITA
+    # CONSTRAINT SU VARIABILI AUSILIARIE PER ACQUISTO/VENDITA
     @constraint(M, vendita[iStage=1], rev_vendita[iStage] == 0)
     @constraint(M, vendita_1[iStage=2:NStages], rev_vendita[iStage] >= 0)
     @constraint(M, vendita_2[iStage=2:NStages], rev_vendita[iStage] >= capacity[Steps_stages[iStage]+1]- e[iStage]*Big)
 
     @constraint(M, acquisto_1[iStage=2:NStages], rev_acquisto[iStage] >= -(1-e[iStage])*Big)
     @constraint(M, acquisto_2[iStage=2:NStages], rev_acquisto[iStage] >= -capacity[Steps_stages[iStage]+2] )
-    @constraint(M, acquisto_3[iStage=1], rev_acquisto[iStage] == 0)=#
+    @constraint(M, acquisto_3[iStage=1], rev_acquisto[iStage] == 0)
 
     return BuildStageProblem_3(
         M,
@@ -174,8 +182,8 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
         #w_zu,
         capacity,
         revamping,
-        #e,
-        #rev_vendita,
-        #rev_acquisto,
+        e,
+        rev_vendita,
+        rev_acquisto,
       )
 end
