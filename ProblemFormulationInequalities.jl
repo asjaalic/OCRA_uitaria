@@ -25,7 +25,7 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
 
     @variable(M, 0 <= e_charge[iStep=1:NSteps] <= max_SOH/min_SOH, base_name= "Charge")      #max_disc   0<=discharge<=1
     @variable(M, 0 <= e_discharge[iStep=1:NSteps] <= max_SOH/min_SOH, base_name= "Discharge")
-    @variable(M, bin_op[iStep=1:NSteps], Bin, base_name = "Binary_operation")
+    #@variable(M, bin_op[iStep=1:NSteps], Bin, base_name = "Binary_operation")
     
     @variable(M, 0 <= deg[iStep=1:NSteps] <= Small*max_SOH/min_SOH, base_name = "Degradation")
 
@@ -105,9 +105,9 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @constraint(M, h_z_3[iStep=1:NSteps+1], h_z[iStep]>= capacity[iStep]-max_SOH/min_SOH*(1-z[iStep]))
     @constraint(M, h_z_4[iStep=1:NSteps+1], h_z[iStep]<= capacity[iStep]-min_SOH/min_SOH*(1-z[iStep]))
 
-    #binary variable for operation
+    #=binary variable for operation
     @constraint(M, charging[iStep=1:NSteps], e_charge[iStep] <= max_P*NHoursStep*(1-bin_op[iStep]))
-    @constraint(M, discharging[iStep=1:NSteps], e_discharge[iStep] <= max_P*NHoursStep*bin_op[iStep])
+    @constraint(M, discharging[iStep=1:NSteps], e_discharge[iStep] <= max_P*NHoursStep*bin_op[iStep])=#
 
     #@constraint(M, deg_1[iStep=1:NSteps], deg[iStep] >= capacity[iStep]*(soc_quad[iStep] - soc_quad[iStep+1] + 2*(soc[iStep+1]-soc[iStep])))
     @constraint(M, deg_1[iStep=1:NSteps], deg[iStep] >= capacity[iStep]*(c[1]*(x[iStep]-x[iStep+1])+c[2]*(y[iStep]-y[iStep+1])+c[3]*(xy[iStep]-xy[iStep+1])+c[4]*(z[iStep]-z[iStep+1])+c[5]*(xz[iStep]-xz[iStep+1])+c[6]*(yz[iStep]-yz[iStep+1])+c[7]*(xyz[iStep]-xyz[iStep+1])+2*Beta*(x[iStep+1]-x[iStep]+2*(y[iStep]-y[iStep+1])+4*(z[iStep]-z[iStep+1]))))  
@@ -144,7 +144,7 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
         soc_quad,
         e_charge,
         e_discharge,
-        bin_op,
+        #bin_op,
         deg,
         x,
         y,
