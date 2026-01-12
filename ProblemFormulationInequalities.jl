@@ -1,6 +1,6 @@
 # STAGE MAXIMIZATION PROBLEM FORMULATION
 
-function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::SolverParam, Battery::BatteryParam, disc, c, b)       
+function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::SolverParam, Battery::BatteryParam, c, b)       
 
     @unpack (MIPGap, MIPFocus, Method, Cuts, Heuristics) = SolverParameters;
   

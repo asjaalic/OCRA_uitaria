@@ -1,6 +1,6 @@
 # SOLVE OPTIMIZATION PROBLEM
 
-function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameters::SolverParam, Battery::BatteryParam, disc, c,b)
+function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameters::SolverParam, Battery::BatteryParam, c,b)
 
     @unpack (NYears, NMonths, NStages, Big, NHoursStep, bin) = InputParameters;                #NSteps, NHoursStage
     @unpack (min_SOC, max_SOC, Eff_charge, Eff_discharge, min_P, max_P, max_SOH, min_SOH, Nfull,fix ) = Battery;
@@ -46,7 +46,7 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
     h_xyz = zeros(NSteps+1)
 
 
-    problem = BuildStageProblem_3(InputParameters, SolverParameters, Battery, disc, c,b)
+    problem = BuildStageProblem_3(InputParameters, SolverParameters, Battery, c,b)
 
    # @unpack (M) = problem
    # write_to_file(M,"OCRA_2.0_opzione_4.mps")
