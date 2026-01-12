@@ -75,24 +75,18 @@ struct BuildStageProblem_3
     e_discharge::Any
     bin_op::Any
     deg::Any
-    aux_deg::Any
     x::Any
     y::Any
     z::Any
-    h_x::Any
-    h_y::Any
-    h_z::Any
-    w_xx::Any
-    w_yy::Any
-    w_zz::Any
     w_xy::Any
     w_xz::Any
     w_zy::Any
+    w_xyz::Any
     capacity::Any
     revamping::Any
-    #e::Any
-    #rev_vendita::Any
-    #rev_acquisto::Any
+    e::Any
+    rev_vendita::Any
+    rev_acquisto::Any
 end
 
 struct Results_3
@@ -105,7 +99,6 @@ struct Results_3
     e_discharge::Any
     bin_op::Any
     deg::Any
-    aux_deg::Any
     soc_quad::Any
     x::Any
     y::Any
