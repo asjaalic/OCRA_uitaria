@@ -75,7 +75,7 @@ end
 
 # SAVE DATA IN EXCEL FILES
 if runMode.excel_savings
-  cartella = "C:\\GitHub\\OCRA_3.0_unitaria\\Results"
+  cartella = "C:\\GitHub\\OCRA_3.0_unitaria\\Results_12_gennaio"
   cd(cartella)
   Saving = data_saving(InputParameters,ResultsOpt)
 else
