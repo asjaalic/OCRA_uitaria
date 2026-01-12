@@ -43,15 +43,18 @@ to = TimerOutput()
   Battery = set_battery_system(runMode, case)
   @unpack (min_SOC, max_SOC, Eff_charge, Eff_discharge, min_P, max_P, max_SOH, min_SOH, Nfull, cost, fix) = Battery; 
 
+  #Calculate coefficients for quadratic terms
+  a,b,c,disc = calculate_coefficients(min_SOC,max_SOC,bin)
+
   # Set solver parameters (Gurobi etc)
   SolverParameters = set_solverParameters()
 
   # Read power prices from a file [€/MWh]
   #Steps_stages = [0 1132 2259 3397 4465 5650 6723 7806 8843 9953 10946 12124 13171 14283 15273 16385 17375 18460 19470 20496 21505] #every semester
-  #Steps_stages = [0 2259 4465 3723 8843 10946 13171 15273 17375 19470 21505] # yearly revamping
-  Steps_stages = [0 4465 8843 13171 17375 21505] # revamping every 2 years
-  #Steps_stop = [128 127 120 111 127 115 115 123 120] # 3 weeks downtime
-  Steps_stop = [120 127 115 120] # 3 weeks downtime
+  Steps_stages = [0 2259 4465 3723 8843 10946 13171 15273 17375 19470 21505] # yearly revamping
+  #Steps_stages = [0 4465 8843 13171 17375 21505] # revamping every 2 years
+  Steps_stop = [128 127 120 111 127 115 115 123 120] # 3 weeks downtime
+  #Steps_stop = [120 127 115 120] # 3 weeks downtime
   NSteps = Steps_stages[NStages+1]
 
   Battery_price_purchase = read_csv("Mid-cost projections 2026-2036.csv",case.DataPath)
@@ -67,7 +70,7 @@ end
 
 @timeit to "Solve optimization problem" begin
   if bin ==3
-  ResultsOpt = solveOptimizationProblem_3(InputParameters,SolverParameters,Battery);
+  ResultsOpt = solveOptimizationProblem_3(InputParameters,SolverParameters,Battery, disc, c, b);
   else
     ResultsOpt = solveOptimizationProblem_4(InputParameters,SolverParameters,Battery);
   end
@@ -75,7 +78,7 @@ end
 
 # SAVE DATA IN EXCEL FILES
 if runMode.excel_savings
-  cartella = "C:\\GitHub_Asja\\OCRA_unitary\\Results_22_dicembre"
+  cartella = "C:\\GitHub\\OCRA_3.0_unitaria\\Results_12_gennaio"
   cd(cartella)
   Saving = data_saving(InputParameters,ResultsOpt)
 else

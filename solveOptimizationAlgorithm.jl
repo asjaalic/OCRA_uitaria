@@ -1,6 +1,6 @@
 # SOLVE OPTIMIZATION PROBLEM
 
-function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameters::SolverParam, Battery::BatteryParam)
+function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameters::SolverParam, Battery::BatteryParam, disc, c,b)
 
     @unpack (NYears, NMonths, NStages, Big, NHoursStep, bin) = InputParameters;                #NSteps, NHoursStage
     @unpack (min_SOC, max_SOC, Eff_charge, Eff_discharge, min_P, max_P, max_SOH, min_SOH, Nfull,fix ) = Battery;
@@ -30,27 +30,23 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
     x = zeros(NSteps+1)
     y = zeros(NSteps+1)
     z = zeros(NSteps+1)
-    w_xx = zeros(NSteps+1)
-    w_yy = zeros(NSteps+1)
-    w_zz = zeros(NSteps+1)
-    w_xy = zeros(NSteps+1)
-    w_xz = zeros(NSteps+1)
-    w_zy = zeros(NSteps+1)
+
+    xy = zeros(NSteps+1)
+    xz = zeros(NSteps+1)
+    yz = zeros(NSteps+1)
+    xyz=zeros(NSteps+1)
 
     h_x = zeros(NSteps+1)
     h_y = zeros(NSteps+1)
     h_z = zeros(NSteps+1)
 
-    h_xx= zeros(NSteps+1)
     h_xy= zeros(NSteps+1)
     h_xz= zeros(NSteps+1)
-    h_yy= zeros(NSteps+1)
-    h_zz= zeros(NSteps+1)
     h_yz= zeros(NSteps+1)
+    h_xyz = zeros(NSteps+1)
 
-    bin_op = zeros(NSteps+1)
 
-    problem = BuildStageProblem_3(InputParameters, SolverParameters, Battery)
+    problem = BuildStageProblem_3(InputParameters, SolverParameters, Battery, disc, c,b)
 
    # @unpack (M) = problem
    # write_to_file(M,"OCRA_2.0_opzione_4.mps")
@@ -78,25 +74,18 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
             y[iStep] = JuMP.value(problem.y[iStep])
             z[iStep] = JuMP.value(problem.z[iStep])
 
-            w_xx[iStep] = JuMP.value(problem.w_xx[iStep])
-            w_yy[iStep] = JuMP.value(problem.w_yy[iStep])
-            w_zz[iStep] = JuMP.value(problem.w_zz[iStep])
-            w_xy[iStep] = JuMP.value(problem.w_xy[iStep])
-            w_xz[iStep] = JuMP.value(problem.w_xz[iStep])
-            w_zy[iStep] = JuMP.value(problem.w_zy[iStep])
+            xy[iStep] = JuMP.value(problem.xy[iStep])
+            xz[iStep] = JuMP.value(problem.xz[iStep])
+            yz[iStep] = JuMP.value(problem.yz[iStep])
 
             h_x[iStep] = JuMP.value(problem.h_x[iStep])
             h_y[iStep] = JuMP.value(problem.h_y[iStep])
             h_z[iStep] = JuMP.value(problem.h_z[iStep])
 
-            h_xx[iStep] = JuMP.value(problem.h_xx[iStep])
             h_xy[iStep] = JuMP.value(problem.h_xy[iStep])
             h_xz[iStep] = JuMP.value(problem.h_xz[iStep])
-            h_yy[iStep] = JuMP.value(problem.h_yy[iStep])
-            h_zz[iStep] = JuMP.value(problem.h_zz[iStep])
             h_yz[iStep] = JuMP.value(problem.h_yz[iStep])
-
-            bin_op[iStep] = JuMP.value(problem.bin_op[iStep])
+            h_xyz[iStep] = JuMP.value(problem.h_xyz[iStep])
 
         end
 
@@ -106,23 +95,19 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
         y[end] = JuMP.value(problem.y[end])
         z[end] = JuMP.value(problem.z[end])
 
-        w_xx[end] = JuMP.value(problem.w_xx[end])
-        w_yy[end] = JuMP.value(problem.w_yy[end])
-        w_zz[end] = JuMP.value(problem.w_zz[end])
-        w_xy[end] = JuMP.value(problem.w_xy[end])
-        w_xz[end] = JuMP.value(problem.w_xz[end])
-        w_zy[end] = JuMP.value(problem.w_zy[end])
+        xy[end] = JuMP.value(problem.xy[end])
+        xz[end] = JuMP.value(problem.xz[end])
+        yz[end] = JuMP.value(problem.yz[end])
+        xyz[end] = JuMP.value(problem.xyz[end])
 
         h_x[end] = JuMP.value(problem.h_x[end])
         h_y[end] = JuMP.value(problem.h_y[end])
         h_z[end] = JuMP.value(problem.h_z[end])
 
-        h_xx[end] = JuMP.value(problem.h_xx[end])
         h_xy[end] = JuMP.value(problem.h_xy[end])
         h_xz[end] = JuMP.value(problem.h_xz[end])
-        h_yy[end] = JuMP.value(problem.h_yy[end])
-        h_zz[end] = JuMP.value(problem.h_zz[end])
         h_yz[end] = JuMP.value(problem.h_yz[end])
+        h_xyz[end] = JuMP.value(problem.h_xyz[end])
 
         cap[end] = JuMP.value(problem.capacity[end])
      
@@ -160,18 +145,15 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
         soc,
         e_charge,
         e_discharge,
-        bin_op,
         deg,
         soc_quad,
         x,
         y,
         z,
-        w_xx,
-        w_yy,
-        w_zz,
-        w_xy,
-        w_xz,
-        w_zy,
+        xy,
+        xz,
+        yz,
+        xyz,
         h_x,
         h_y,
         h_z,
@@ -180,12 +162,10 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
         e,
         rev_vendita,
         rev_acquisto,
-        h_xx,
         h_xy,
         h_xz,
-        h_yy,
-        h_zz,
         h_yz,
+        h_xyz,
     )
 
 end

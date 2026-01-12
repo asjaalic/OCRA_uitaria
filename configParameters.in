@@ -1,7 +1,7 @@
 
 #problem definition
     NYears = 10
-    NMonths = 24
+    NMonths = 12
     NHoursStep = 1.0
     Hours_rolling = 48
     Hours_saved = 24

@@ -1,6 +1,6 @@
 # STAGE MAXIMIZATION PROBLEM FORMULATION
 
-function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::SolverParam, Battery::BatteryParam)       
+function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::SolverParam, Battery::BatteryParam, disc, c, b)       
 
     @unpack (MIPGap, MIPFocus, Method, Cuts, Heuristics) = SolverParameters;
   
@@ -50,23 +50,19 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @variable(M, y[iStep=1:NSteps+1], Bin, base_name = "Binary_2")
     @variable(M, z[iStep=1:NSteps+1], Bin, base_name = "Binary_3")
 
-    @variable(M, w_xx[iStep=1:NSteps+1] , Bin, base_name = "xx")
-    @variable(M, w_yy[iStep=1:NSteps+1], Bin, base_name = "yy")
-    @variable(M, w_zz[iStep=1:NSteps+1], Bin, base_name = "zz")
-    @variable(M, w_xy[iStep=1:NSteps+1], Bin, base_name = "xy")
-    @variable(M, w_xz[iStep=1:NSteps+1], Bin, base_name = "xz")
-    @variable(M, w_zy[iStep=1:NSteps+1], Bin, base_name = "yz")
+    @variable(M, xy[iStep=1:NSteps+1], Bin, base_name = "xy")
+    @variable(M, xz[iStep=1:NSteps+1], Bin, base_name = "xz")
+    @variable(M, yz[iStep=1:NSteps+1], Bin, base_name = "yz")
+    @variable(M, xyz[iStep=1:NSteps+1], Bin, base_name = "xyz")
     
     @variable(M, 0 <= h_x[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_1")
     @variable(M, 0 <= h_y[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_2")
     @variable(M, 0 <= h_z[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_3")
 
-    @variable(M, 0 <= h_xx[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_xx")
     @variable(M, 0 <= h_xy[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_xy")
     @variable(M, 0 <= h_xz[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_xz")
-    @variable(M, 0 <= h_yy[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_yy")
-    @variable(M, 0 <= h_zz[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_zz")
     @variable(M, 0 <= h_yz[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_yz")
+    @variable(M, 0 <= h_xyz[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_xyz")
 
 
     # DEFINE OBJECTIVE function - length(Battery_price) = NStages+1=21
@@ -87,29 +83,26 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @constraint(M,energy[iStep=1:NSteps], e_charge[iStep]-e_discharge[iStep] == Beta*((h_x[iStep+1]-h_x[iStep])+2*(h_y[iStep+1]-h_y[iStep])+4*(h_z[iStep+1]-h_z[iStep]))+min_SOC*(capacity[iStep+1]-capacity[iStep]))
 
     @constraint(M, en_bal[iStep=1:NSteps+1], min_SOC + Beta*(x[iStep]+2*y[iStep]+4*z[iStep]) == soc[iStep]) 
-    @constraint(M, en_square[iStep=1:NSteps+1], soc_quad[iStep] == min_SOC^2+ 2*min_SOC*Beta*(x[iStep]+2*y[iStep]+4*z[iStep])+(w_xx[iStep]+4*w_xy[iStep]+8*w_xz[iStep]+4*w_yy[iStep]+16*w_zz[iStep]+16*w_zy[iStep])*Beta^2)
+    @constraint(M, en_square[iStep=1:NSteps+1], soc_quad[iStep] == b[1]+c[1]*x[iStep]+c[2]*y[iStep]+c[3]*xy[iStep]+c[4]*z[iStep]+c[5]*xz[iStep]+c[6]*yz[iStep]+c[7]*xyz[iStep])
     
     # AUXILIARY FOR FORTET EXACT INEQUALITIES
-    @constraint(M, xx_1[iStep=1:NSteps+1], w_xx[iStep] <= x[iStep])
-    @constraint(M, xx_2[iStep=1:NSteps+1], w_xx[iStep] >= 2*x[iStep]-1)
 
-    @constraint(M, xy_1[iStep=1:NSteps+1], w_xy[iStep] <= x[iStep])
-    @constraint(M, xy_2[iStep=1:NSteps+1], w_xy[iStep] <= y[iStep])
-    @constraint(M, xy_3[iStep=1:NSteps+1], w_xy[iStep] >= x[iStep]+y[iStep]-1)
+    @constraint(M, xy_1[iStep=1:NSteps+1], xy[iStep] <= x[iStep])
+    @constraint(M, xy_2[iStep=1:NSteps+1], xy[iStep] <= y[iStep])
+    @constraint(M, xy_3[iStep=1:NSteps+1], xy[iStep] >= x[iStep]+y[iStep]-1)
 
-    @constraint(M, xz_1[iStep=1:NSteps+1], w_xz[iStep] <= x[iStep])
-    @constraint(M, xz_2[iStep=1:NSteps+1], w_xz[iStep] <= z[iStep])
-    @constraint(M, xz_3[iStep=1:NSteps+1], w_xz[iStep] >= x[iStep]+z[iStep]-1)
+    @constraint(M, xz_1[iStep=1:NSteps+1], xz[iStep] <= x[iStep])
+    @constraint(M, xz_2[iStep=1:NSteps+1], xz[iStep] <= z[iStep])
+    @constraint(M, xz_3[iStep=1:NSteps+1], xz[iStep] >= x[iStep]+z[iStep]-1)
 
-    @constraint(M, yy_1[iStep=1:NSteps+1], w_yy[iStep] <= y[iStep])
-    @constraint(M, yy_2[iStep=1:NSteps+1], w_yy[iStep] >= 2*y[iStep]-1)
+    @constraint(M, zy_1[iStep=1:NSteps+1], yz[iStep] <= z[iStep])
+    @constraint(M, zy_2[iStep=1:NSteps+1], yz[iStep] <= y[iStep])
+    @constraint(M, zy_3[iStep=1:NSteps+1], yz[iStep] >= z[iStep]+y[iStep]-1)
 
-    @constraint(M, zz_1[iStep=1:NSteps+1], w_zz[iStep] <= z[iStep])
-    @constraint(M, zz_2[iStep=1:NSteps+1], w_zz[iStep] >= 2*z[iStep]-1)
-
-    @constraint(M, zy_1[iStep=1:NSteps+1], w_zy[iStep] <= z[iStep])
-    @constraint(M, zy_2[iStep=1:NSteps+1], w_zy[iStep] <= y[iStep])
-    @constraint(M, zy_3[iStep=1:NSteps+1], w_zy[iStep] >= z[iStep]+y[iStep]-1)
+    @constraint(M, xyz_1[iStep=1:NSteps+1], xyz[iStep] <= x[iStep])
+    @constraint(M, xyz_2[iStep=1:NSteps+1], xyz[iStep] <= y[iStep])
+    @constraint(M, xyz_3[iStep=1:NSteps+1], xyz[iStep] <= z[iStep])
+    @constraint(M, xyz_4[iStep=1:NSteps+1], xyz[iStep] >= x[iStep]+y[iStep]+z[iStep]-2)
     
     # AUXILIARY CONSTRAINTS FOR ENERGY BALANCE CONSTRAINTS
     @constraint(M, h_x_1[iStep=1:NSteps+1], h_x[iStep]>= min_SOH/min_SOH*x[iStep])
@@ -128,46 +121,36 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @constraint(M, h_z_4[iStep=1:NSteps+1], h_z[iStep]<= capacity[iStep]-min_SOH/min_SOH*(1-z[iStep]))
 
     #ADDITIONAL CONSTRAINTS FOR DEGRADATION (BILINEAR TERMS)
-    @constraint(M, h_xx_1[iStep=1:NSteps+1], h_xx[iStep]>= min_SOH/min_SOH*w_xx[iStep])
-    @constraint(M, h_xx_2[iStep=1:NSteps+1], h_xx[iStep]<= max_SOH/min_SOH*w_xx[iStep])
-    @constraint(M, h_xx_3[iStep=1:NSteps+1], h_xx[iStep]>= capacity[iStep]-max_SOH/min_SOH*(1-w_xx[iStep]))
-    @constraint(M, h_xx_4[iStep=1:NSteps+1], h_xx[iStep]<= capacity[iStep]-min_SOH/min_SOH*(1-w_xx[iStep]))
+    @constraint(M, h_xy_1[iStep=1:NSteps+1], h_xy[iStep]>= min_SOH/min_SOH*xy[iStep])
+    @constraint(M, h_xy_2[iStep=1:NSteps+1], h_xy[iStep]<= max_SOH/min_SOH*xy[iStep])
+    @constraint(M, h_xy_3[iStep=1:NSteps+1], h_xy[iStep]>= capacity[iStep]-max_SOH/min_SOH*(1-xy[iStep]))
+    @constraint(M, h_xy_4[iStep=1:NSteps+1], h_xy[iStep]<= capacity[iStep]-min_SOH/min_SOH*(1-xy[iStep]))
 
-    @constraint(M, h_xy_1[iStep=1:NSteps+1], h_xy[iStep]>= min_SOH/min_SOH*w_xy[iStep])
-    @constraint(M, h_xy_2[iStep=1:NSteps+1], h_xy[iStep]<= max_SOH/min_SOH*w_xy[iStep])
-    @constraint(M, h_xy_3[iStep=1:NSteps+1], h_xy[iStep]>= capacity[iStep]-max_SOH/min_SOH*(1-w_xy[iStep]))
-    @constraint(M, h_xy_4[iStep=1:NSteps+1], h_xy[iStep]<= capacity[iStep]-min_SOH/min_SOH*(1-w_xy[iStep]))
+    @constraint(M, h_xz_1[iStep=1:NSteps+1], h_xz[iStep]>= min_SOH/min_SOH*xz[iStep])
+    @constraint(M, h_xz_2[iStep=1:NSteps+1], h_xz[iStep]<= max_SOH/min_SOH*xz[iStep])
+    @constraint(M, h_xz_3[iStep=1:NSteps+1], h_xz[iStep]>= capacity[iStep]-max_SOH/min_SOH*(1-xz[iStep]))
+    @constraint(M, h_xz_4[iStep=1:NSteps+1], h_xz[iStep]<= capacity[iStep]-min_SOH/min_SOH*(1-xz[iStep]))
 
-    @constraint(M, h_xz_1[iStep=1:NSteps+1], h_xz[iStep]>= min_SOH/min_SOH*w_xz[iStep])
-    @constraint(M, h_xz_2[iStep=1:NSteps+1], h_xz[iStep]<= max_SOH/min_SOH*w_xz[iStep])
-    @constraint(M, h_xz_3[iStep=1:NSteps+1], h_xz[iStep]>= capacity[iStep]-max_SOH/min_SOH*(1-w_xz[iStep]))
-    @constraint(M, h_xz_4[iStep=1:NSteps+1], h_xz[iStep]<= capacity[iStep]-min_SOH/min_SOH*(1-w_xz[iStep]))
+    @constraint(M, h_yz_1[iStep=1:NSteps+1], h_yz[iStep]>= min_SOH/min_SOH*yz[iStep])
+    @constraint(M, h_yz_2[iStep=1:NSteps+1], h_yz[iStep]<= max_SOH/min_SOH*yz[iStep])
+    @constraint(M, h_yz_3[iStep=1:NSteps+1], h_yz[iStep]>= capacity[iStep]-max_SOH/min_SOH*(1-yz[iStep]))
+    @constraint(M, h_yz_4[iStep=1:NSteps+1], h_yz[iStep]<= capacity[iStep]-min_SOH/min_SOH*(1-yz[iStep]))
 
-    @constraint(M, h_yy_1[iStep=1:NSteps+1], h_yy[iStep]>= min_SOH/min_SOH*w_yy[iStep])
-    @constraint(M, h_yy_2[iStep=1:NSteps+1], h_yy[iStep]<= max_SOH/min_SOH*w_yy[iStep])
-    @constraint(M, h_yy_3[iStep=1:NSteps+1], h_yy[iStep]>= capacity[iStep]-max_SOH/min_SOH*(1-w_yy[iStep]))
-    @constraint(M, h_yy_4[iStep=1:NSteps+1], h_yy[iStep]<= capacity[iStep]-min_SOH/min_SOH*(1-w_yy[iStep]))
-
-    @constraint(M, h_zz_1[iStep=1:NSteps+1], h_zz[iStep]>= min_SOH/min_SOH*w_zz[iStep])
-    @constraint(M, h_zz_2[iStep=1:NSteps+1], h_zz[iStep]<= max_SOH/min_SOH*w_zz[iStep])
-    @constraint(M, h_zz_3[iStep=1:NSteps+1], h_zz[iStep]>= capacity[iStep]-max_SOH/min_SOH*(1-w_zz[iStep]))
-    @constraint(M, h_zz_4[iStep=1:NSteps+1], h_zz[iStep]<= capacity[iStep]-min_SOH/min_SOH*(1-w_zz[iStep]))
-
-    @constraint(M, h_yz_1[iStep=1:NSteps+1], h_yz[iStep]>= min_SOH/min_SOH*w_zy[iStep])
-    @constraint(M, h_yz_2[iStep=1:NSteps+1], h_yz[iStep]<= max_SOH/min_SOH*w_zy[iStep])
-    @constraint(M, h_yz_3[iStep=1:NSteps+1], h_yz[iStep]>= capacity[iStep]-max_SOH/min_SOH*(1-w_zy[iStep]))
-    @constraint(M, h_yz_4[iStep=1:NSteps+1], h_yz[iStep]<= capacity[iStep]-min_SOH/min_SOH*(1-w_zy[iStep]))
+    @constraint(M, h_xyz_1[iStep=1:NSteps+1], h_xyz[iStep]>= min_SOH/min_SOH*xyz[iStep])
+    @constraint(M, h_xyz_2[iStep=1:NSteps+1], h_xyz[iStep]<= max_SOH/min_SOH*xyz[iStep])
+    @constraint(M, h_xyz_3[iStep=1:NSteps+1], h_xyz[iStep]>= capacity[iStep]-max_SOH/min_SOH*(1-xyz[iStep]))
+    @constraint(M, h_xyz_4[iStep=1:NSteps+1], h_xyz[iStep]<= capacity[iStep]-min_SOH/min_SOH*(1-xyz[iStep]))
 
     #binary variable for operation
     #@constraint(M, charging[iStep=1:NSteps], e_charge[iStep] <= max_P*NHoursStep*(1-bin_op[iStep]))
     #@constraint(M, discharging[iStep=1:NSteps], e_discharge[iStep] <= max_P*NHoursStep*bin_op[iStep])
 
     # CONSTRAINTS ON DEGRADATION
-    @constraint(M, deg_1[iStep=1:NSteps], deg[iStep] >= (2*min_SOC*Beta-2*Beta)*(h_x[iStep+1]-h_x[iStep]+2*(h_y[iStep+1]-h_y[iStep])+4*(h_z[iStep+1]-h_z[iStep]))+Beta^2*(h_xx[iStep+1]-h_xx[iStep]+4*(h_xy[iStep+1]-h_xy[iStep])+8*(h_xz[iStep+1]-h_xz[iStep])+4*(h_yy[iStep+1]-h_yy[iStep])+16*(h_zz[iStep+1]-h_zz[iStep])+16*(h_yz[iStep+1]-h_yz[iStep])))
-    @constraint(M, deg_2[iStep=1:NSteps], deg[iStep] >= (2*min_SOC*Beta-2*Beta)*(h_x[iStep]-h_x[iStep+1]+2*(h_y[iStep]-h_y[iStep+1])+4*(h_z[iStep]-h_z[iStep+1]))+Beta^2*(h_xx[iStep]-h_xx[iStep+1]+4*(h_xy[iStep]-h_xy[iStep+1])+8*(h_xz[iStep]-h_xz[iStep+1])+4*(h_yy[iStep]-h_yy[iStep+1])+16*(h_zz[iStep]-h_zz[iStep+1])+16*(h_yz[iStep]-h_yz[iStep+1])))
+    @constraint(M, deg_1[iStep=1:NSteps], deg[iStep] >= (c[1]-2*Beta)*(h_x[iStep+1]-h_x[iStep])+(c[2]-4*Beta)*(h_y[iStep+1]-h_y[iStep])+(c[4]-8*Beta)*(h_z[iStep+1]-h_z[iStep])+c[3]*(h_xy[iStep+1]-h_xy[iStep])+c[5]*(h_xz[iStep+1]-h_xz[iStep])+c[6]*(h_yz[iStep+1]-h_yz[iStep])+c[7]*(h_xyz[iStep+1]-h_xyz[iStep]))
+    @constraint(M, deg_2[iStep=1:NSteps], deg[iStep] >= (c[1]-2*Beta)*(h_x[iStep]-h_x[iStep+1])+(c[2]-4*Beta)*(h_y[iStep]-h_y[iStep+1])+(c[4]-8*Beta)*(h_z[iStep]-h_z[iStep+1])+c[3]*(h_xy[iStep]-h_xy[iStep+1])+c[5]*(h_xz[iStep]-h_xz[iStep+1])+c[6]*(h_yz[iStep]-h_yz[iStep+1])+c[7]*(h_xyz[iStep]-h_xyz[iStep+1]))
 
     #CONSTRAINT ON REVAMPING
-    @constraint(M, energy_capacity[iStage=1:NStages], capacity[Steps_stages[iStage]+2] == capacity[Steps_stages[iStage]+1]+revamping[iStage]-deg[Steps_stages[iStage]+1]*k_deg) #
+    @constraint(M, energy_capacity[iStage=1:NStages], capacity[Steps_stages[iStage]+2] == capacity[Steps_stages[iStage]+1]+revamping[iStage]-deg[Steps_stages[iStage]+1]*k_deg) 
    
     @constraint(M, initial_e[iStep=1], capacity[iStep] == min_SOH)
 
@@ -196,7 +179,7 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
         soc_quad,
         e_charge,
         e_discharge,
-        bin_op,
+        #bin_op,
         deg,
         x,
         y,
@@ -204,22 +187,18 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
         h_x,
         h_y,
         h_z,
-        w_xx,
-        w_yy,
-        w_zz,
-        w_xy,
-        w_xz,
-        w_zy,
+        xy,
+        xz,
+        yz,
+        xyz,
         capacity,
         revamping,
         e,
         rev_vendita,
         rev_acquisto,
-        h_xx,
         h_xy,
         h_xz,
-        h_yy,
-        h_zz,
         h_yz,
+        h_xyz,
       )
 end

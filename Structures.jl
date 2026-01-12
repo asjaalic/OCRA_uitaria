@@ -73,7 +73,7 @@ struct BuildStageProblem_3
     soc_quad::Any
     e_charge::Any 
     e_discharge::Any
-    bin_op::Any
+    #bin_op::Any
     deg::Any
     x::Any
     y::Any
@@ -81,23 +81,19 @@ struct BuildStageProblem_3
     h_x::Any
     h_y::Any
     h_z::Any
-    w_xx::Any
-    w_yy::Any
-    w_zz::Any
-    w_xy::Any
-    w_xz::Any
-    w_zy::Any
+    xy::Any
+    xz::Any
+    yz::Any
+    xyz::Any
     capacity::Any
     revamping::Any
     e::Any
     rev_vendita::Any
     rev_acquisto::Any
-    h_xx::Any
     h_xy::Any
     h_xz::Any
-    h_yy::Any
-    h_zz::Any
     h_yz::Any
+    h_xyz::Any
 end
 
 struct Results_3
@@ -108,18 +104,15 @@ struct Results_3
     soc::Any
     e_charge::Any
     e_discharge::Any
-    bin_op::Any
     deg::Any
     soc_quad::Any
     x::Any
     y::Any
     z::Any
-    w_xx::Any
-    w_yy::Any
-    w_zz::Any
-    w_xy::Any
-    w_xz::Any
-    w_zy::Any
+    xy::Any
+    xz::Any
+    yz::Any
+    xyz::Any
     h_x::Any
     h_y::Any
     h_z::Any
@@ -128,12 +121,10 @@ struct Results_3
     e::Any
     rev_vendita::Any
     rev_acquisto::Any
-    h_xx::Any
     h_xy::Any
     h_xz::Any
-    h_yy::Any
-    h_zz::Any
     h_yz::Any
+    h_xyz::Any
 end
 
 struct BuildStageProblem_4
