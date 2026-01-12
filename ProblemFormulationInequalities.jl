@@ -36,7 +36,6 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @variable(M, bin_op[iStep=1:NSteps], Bin, base_name = "Binary_operation")
     
     @variable(M, 0 <= deg[iStep=1:NSteps] <= Small*max_SOH/min_SOH, base_name = "Degradation")
-    @variable(M, 0 <= aux_deg[iStep=1:NSteps] <= Small, base_name = "Aux_deg")
 
     @variable(M, 0 <= revamping[iStage=1:NStages] <= (max_SOH-min_SOH)/max_SOC, base_name = "Revamping")
     @variable(M, min_SOH/min_SOH <= capacity[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Energy_Capacity")        #energy_Capacity     [iStage=1:NStages]
@@ -66,7 +65,7 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @objective(
       M,
       MathOptInterface.MAX_SENSE, 
-      sum(Power_prices[iStep]*(e_discharge[iStep]*Eff_discharge-e_charge[iStep]/Eff_charge) for iStep=1:NSteps) -               # 
+      sum(Power_prices[iStep]*(e_discharge[iStep]*Eff_discharge-e_charge[iStep]/Eff_charge) for iStep=1:NSteps) -               
       Battery_price_purchase[1]*(revamping[1]) 
       #-sum(Battery_price_purchase[iStage]*(revamping[iStage]) for iStage=1:NStages) +
       -sum(Battery_price_purchase[iStage]*(capacity[Steps_stages[iStage]+2] + rev_acquisto[iStage]) for iStage=2:NStages) +
@@ -125,15 +124,14 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @constraint(M, discharging[iStep=1:NSteps], e_discharge[iStep] <= max_P*NHoursStep*bin_op[iStep])
 
     # CONSTRAINTS ON DEGRADATION
-    @constraint(M, deg_1[iStep=1:NSteps], aux_deg[iStep] >= soc_quad[iStep] - soc_quad[iStep+1] + 2*(soc[iStep+1]-soc[iStep]))
-    @constraint(M, deg_2[iStep=1:NSteps], aux_deg[iStep] >= soc_quad[iStep+1] - soc_quad[iStep] + 2*(soc[iStep]-soc[iStep+1]))
-
-    @constraint(M, final_deg[iStep=1:NSteps], deg[iStep] >= capacity[iStep]*aux_deg[iStep])
+    @constraint(M, deg_1[iStep=1:NSteps],  deg[iStep] >= capacity[iStep])
+    @constraint(M, deg_2[iStep=1:NSteps],  deg[iStep] >= capacity[iStep])
 
     #CONSTRAINT ON REVAMPING
     @constraint(M, energy_capacity[iStage=1:NStages], capacity[Steps_stages[iStage]+2] == capacity[Steps_stages[iStage]+1]+revamping[iStage]-deg[Steps_stages[iStage]+1]*k_deg) #
    
     @constraint(M, initial_e[iStep=1], capacity[iStep] == min_SOH)
+    @constraint(M, initial_rev[iStep=1], e[iStep] == 1)
 
     @constraint(M,en_cap1[iStage in 1:NStages, iStep in ((Steps_stages[iStage]+2):Steps_stages[iStage+1])], capacity[iStep+1]== capacity[iStep]-deg[iStep]*k_deg)
 
@@ -162,7 +160,6 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
         e_discharge,
         bin_op,
         deg,
-        aux_deg,
         x,
         y,
         z,
