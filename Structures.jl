@@ -78,10 +78,13 @@ struct BuildStageProblem_3
     x::Any
     y::Any
     z::Any
-    w_xy::Any
-    w_xz::Any
-    w_zy::Any
-    w_xyz::Any
+    xy::Any
+    xz::Any
+    yz::Any
+    xyz::Any
+    h_x::Any
+    h_y::Any
+    h_z::Any
     capacity::Any
     revamping::Any
     e::Any
@@ -103,10 +106,13 @@ struct Results_3
     x::Any
     y::Any
     z::Any
-    w_xy::Any
-    w_xz::Any
-    w_zy::Any
-    w_xyz::Any
+    xy::Any
+    xz::Any
+    yz::Any
+    xyz::Any
+    h_x::Any
+    h_y::Any
+    h_z::Any
     rev::Any
     cap::Any
     e::Any

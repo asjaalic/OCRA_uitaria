@@ -42,10 +42,14 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @variable(M, y[iStep=1:NSteps+1], Bin, base_name = "Binary_2")
     @variable(M, z[iStep=1:NSteps+1], Bin, base_name = "Binary_3")
 
-    @variable(M, 0<= w_xy[iStep=1:NSteps+1] <= 1, base_name = "xy")
-    @variable(M, 0<= w_xz[iStep=1:NSteps+1] <= 1, base_name = "xz")
-    @variable(M, 0<= w_zy[iStep=1:NSteps+1] <= 1, base_name = "yz")
-    @variable(M, 0<= w_xyz[iStep=1:NSteps+1] <= 1, base_name = "xyz")
+    @variable(M, 0<= xy[iStep=1:NSteps+1] <= 1, base_name = "xy")
+    @variable(M, 0<= xz[iStep=1:NSteps+1] <= 1, base_name = "xz")
+    @variable(M, 0<= yz[iStep=1:NSteps+1] <= 1, base_name = "yz")
+    @variable(M, 0<= xyz[iStep=1:NSteps+1] <= 1, base_name = "xyz")
+
+    @variable(M, 0 <= h_x[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_1")
+    @variable(M, 0 <= h_y[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_2")
+    @variable(M, 0 <= h_z[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_3")
 
     # DEFINE OBJECTIVE function - length(Battery_price) = NStages+1=21
     @objective(
@@ -62,7 +66,7 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
       )
          
     # DEFINE CONSTRAINTS
-    @constraint(M,energy[iStep=1:NSteps], soc[iStep] + (charge[iStep]*Eff_charge-discharge[iStep]/Eff_discharge)*NHoursStep == soc[iStep+1])
+    @constraint(M,energy[iStep=1:NSteps], e_charge[iStep]-e_discharge[iStep] == Beta*((h_x[iStep+1]-h_x[iStep])+2*(h_y[iStep+1]-h_y[iStep])+4*(h_z[iStep+1]-h_z[iStep]))+min_SOC*(capacity[iStep+1]-capacity[iStep]))
 
     @constraint(M, en_bal[iStep=1:NSteps+1], min_SOC + Beta*(x[iStep]+2*y[iStep]+4*z[iStep]) == soc[iStep]) 
     @constraint(M, en_square[iStep=1:NSteps+1], soc_quad[iStep] == b[1]+c[1]*x[iStep]+c[2]*y[iStep]+c[3]*xy[iStep]+c[4]*z[iStep]+c[5]*xz[iStep]+c[6]*yz[iStep]+c[7]*xyz[iStep])
@@ -107,7 +111,7 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
 
     #@constraint(M, deg_1[iStep=1:NSteps], deg[iStep] >= capacity[iStep]*(soc_quad[iStep] - soc_quad[iStep+1] + 2*(soc[iStep+1]-soc[iStep])))
     @constraint(M, deg_1[iStep=1:NSteps], deg[iStep] >= capacity[iStep]*(c[1]*(x[iStep]-x[iStep+1])+c[2]*(y[iStep]-y[iStep+1])+c[3]*(xy[iStep]-xy[iStep+1])+c[4]*(z[iStep]-z[iStep+1])+c[5]*(xz[iStep]-xz[iStep+1])+c[6]*(yz[iStep]-yz[iStep+1])+c[7]*(xyz[iStep]-xyz[iStep+1])+2*Beta*(x[iStep+1]-x[iStep]+2*(y[iStep]-y[iStep+1])+4*(z[iStep]-z[iStep+1]))))  
-    @constraint(M, deg_1[iStep=1:NSteps], deg[iStep] >= capacity[iStep]*(c[1]*(x[iStep+1]-x[iStep])+c[2]*(y[iStep+1]-y[iStep])+c[3]*(xy[iStep+1]-xy[iStep])+c[4]*(z[iStep+1]-z[iStep])+c[5]*(xz[iStep+1]-xz[iStep])+c[6]*(yz[iStep+1]-yz[iStep])+c[7]*(xyz[iStep+1]-xyz[iStep])+2*Beta*(x[iStep]-x[iStep+1]+2*(y[iStep+1]-y[iStep])+4*(z[iStep+1]-z[iStep]))))
+    @constraint(M, deg_2[iStep=1:NSteps], deg[iStep] >= capacity[iStep]*(c[1]*(x[iStep+1]-x[iStep])+c[2]*(y[iStep+1]-y[iStep])+c[3]*(xy[iStep+1]-xy[iStep])+c[4]*(z[iStep+1]-z[iStep])+c[5]*(xz[iStep+1]-xz[iStep])+c[6]*(yz[iStep+1]-yz[iStep])+c[7]*(xyz[iStep+1]-xyz[iStep])+2*Beta*(x[iStep]-x[iStep+1]+2*(y[iStep+1]-y[iStep])+4*(z[iStep+1]-z[iStep]))))
 
     #CONSTRAINT ON REVAMPING
     @constraint(M, energy_capacity[iStage=1:NStages], capacity[Steps_stages[iStage]+2] == capacity[Steps_stages[iStage]+1]+revamping[iStage]-deg[Steps_stages[iStage]+1]*k_deg) #
@@ -145,10 +149,13 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
         x,
         y,
         z,
-        w_xy,
-        w_xz,
-        w_zy,
-        w_xyz,
+        xy,
+        xz,
+        yz,
+        xyz,
+        h_x,
+        h_y,
+        h_z,
         capacity,
         revamping,
         e,
