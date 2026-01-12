@@ -85,12 +85,29 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @constraint(M, xyz_3[iStep=1:NSteps+1], xyz[iStep] <= x[iStep])
     @constraint(M, xyz_4[iStep=1:NSteps+1], xyz[iStep] >= z[iStep]+y[iStep]+x[iStep]-2) 
 
+    # AUXILIARY CONSTRAINTS FOR ENERGY BALANCE CONSTRAINTS
+    @constraint(M, h_x_1[iStep=1:NSteps+1], h_x[iStep]>= min_SOH/min_SOH*x[iStep])
+    @constraint(M, h_x_2[iStep=1:NSteps+1], h_x[iStep]<= max_SOH/min_SOH*x[iStep])
+    @constraint(M, h_x_3[iStep=1:NSteps+1], h_x[iStep]>= capacity[iStep]-max_SOH/min_SOH*(1-x[iStep]))
+    @constraint(M, h_x_4[iStep=1:NSteps+1], h_x[iStep]<= capacity[iStep]-min_SOH/min_SOH*(1-x[iStep]))
+
+    @constraint(M, h_y_1[iStep=1:NSteps+1], h_y[iStep]>= min_SOH/min_SOH*y[iStep])
+    @constraint(M, h_y_2[iStep=1:NSteps+1], h_y[iStep]<= max_SOH/min_SOH*y[iStep])
+    @constraint(M, h_y_3[iStep=1:NSteps+1], h_y[iStep]>= capacity[iStep]-max_SOH/min_SOH*(1-y[iStep]))
+    @constraint(M, h_y_4[iStep=1:NSteps+1], h_y[iStep]<= capacity[iStep]-min_SOH/min_SOH*(1-y[iStep]))
+
+    @constraint(M, h_z_1[iStep=1:NSteps+1], h_z[iStep]>= min_SOH/min_SOH*z[iStep])
+    @constraint(M, h_z_2[iStep=1:NSteps+1], h_z[iStep]<= max_SOH/min_SOH*z[iStep])
+    @constraint(M, h_z_3[iStep=1:NSteps+1], h_z[iStep]>= capacity[iStep]-max_SOH/min_SOH*(1-z[iStep]))
+    @constraint(M, h_z_4[iStep=1:NSteps+1], h_z[iStep]<= capacity[iStep]-min_SOH/min_SOH*(1-z[iStep]))
+
     #binary variable for operation
     @constraint(M, charging[iStep=1:NSteps], e_charge[iStep] <= max_P*NHoursStep*(1-bin_op[iStep]))
     @constraint(M, discharging[iStep=1:NSteps], e_discharge[iStep] <= max_P*NHoursStep*bin_op[iStep])
 
-    @constraint(M, deg_1[iStep=1:NSteps], deg[iStep] >= capacity[iStep]*(soc_quad[iStep] - soc_quad[iStep+1] + 2*(soc[iStep+1]-soc[iStep])))
-    @constraint(M, deg_1[iStep=1:NSteps], deg[iStep] >= capacity[iStep]*(soc_quad[iStep+1] - soc_quad[iStep] + 2*(soc[iStep]-soc[iStep+1])))
+    #@constraint(M, deg_1[iStep=1:NSteps], deg[iStep] >= capacity[iStep]*(soc_quad[iStep] - soc_quad[iStep+1] + 2*(soc[iStep+1]-soc[iStep])))
+    @constraint(M, deg_1[iStep=1:NSteps], deg[iStep] >= capacity[iStep]*(c[1]*(x[iStep]-x[iStep+1])+c[2]*(y[iStep]-y[iStep+1])+c[3]*(xy[iStep]-xy[iStep+1])+c[4]*(z[iStep]-z[iStep+1])+c[5]*(xz[iStep]-xz[iStep+1])+c[6]*(yz[iStep]-yz[iStep+1])+c[7]*(xyz[iStep]-xyz[iStep+1])+2*Beta*(x[iStep+1]-x[iStep]+2*(y[iStep]-y[iStep+1])+4*(z[iStep]-z[iStep+1]))))  
+    @constraint(M, deg_1[iStep=1:NSteps], deg[iStep] >= capacity[iStep]*(c[1]*(x[iStep+1]-x[iStep])+c[2]*(y[iStep+1]-y[iStep])+c[3]*(xy[iStep+1]-xy[iStep])+c[4]*(z[iStep+1]-z[iStep])+c[5]*(xz[iStep+1]-xz[iStep])+c[6]*(yz[iStep+1]-yz[iStep])+c[7]*(xyz[iStep+1]-xyz[iStep])+2*Beta*(x[iStep]-x[iStep+1]+2*(y[iStep+1]-y[iStep])+4*(z[iStep+1]-z[iStep]))))
 
     #CONSTRAINT ON REVAMPING
     @constraint(M, energy_capacity[iStage=1:NStages], capacity[Steps_stages[iStage]+2] == capacity[Steps_stages[iStage]+1]+revamping[iStage]-deg[Steps_stages[iStage]+1]*k_deg) #
