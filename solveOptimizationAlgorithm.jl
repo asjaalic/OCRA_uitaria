@@ -19,7 +19,6 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
     e_discharge = zeros(NSteps)
     soc = zeros(NSteps+1)
     deg = zeros(NSteps)
-    aux_deg = zeros(NSteps)
     rev= zeros(NStages)
     cap = zeros(NSteps+1)
 
@@ -83,7 +82,6 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
             h_z[iStep] = JuMP.value(problem.h_z[iStep])
 
             bin_op[iStep] = JuMP.value(problem.bin_op[iStep])
-            aux_deg[iStep] = JuMP.value(problem.aux_deg[iStep])
 
         end
 
@@ -142,7 +140,6 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
         e_discharge,
         bin_op,
         deg,
-        aux_deg,
         soc_quad,
         x,
         y,
