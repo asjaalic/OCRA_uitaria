@@ -46,6 +46,8 @@ to = TimerOutput()
   # Set solver parameters (Gurobi etc)
   SolverParameters = set_solverParameters()
 
+  a,b,c,disc = calculate_coefficients(min_SOC,max_SOC,bin)
+
   # Read power prices from a file [€/MWh]
   Steps_stages = [0 653 1396 2043 2777 3441 4187 4843 5582 6259 7000 7673 8415 9093 9835 10501 11236 11903 12641 13315 14047]
   Steps_stop = [87 81 83 81 87 71 85 84 87 80 85 80 85 79 87 74 85 90 81]                      # 3 weeks

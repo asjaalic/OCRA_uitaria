@@ -110,20 +110,15 @@ struct Results_3
     x::Any
     y::Any
     z::Any
-    w_xx::Any
-    w_yy::Any
-    w_zz::Any
     w_xy::Any
     w_xz::Any
     w_zy::Any
-    h_x::Any
-    h_y::Any
-    h_z::Any
+    w_xyz::Any
     rev::Any
     cap::Any
-    #e::Any
-    #rev_vendita::Any
-    #rev_acquisto::Any
+    e::Any
+    rev_vendita::Any
+    rev_acquisto::Any
 end
 
 struct BuildStageProblem_4
