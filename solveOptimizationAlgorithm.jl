@@ -50,7 +50,7 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
 
     #bin_op = zeros(NSteps+1)
 
-    problem = BuildStageProblem_3(InputParameters, SolverParameters, Battery)
+    problem = BuildStageProb_3(InputParameters, SolverParameters, Battery)
 
    # @unpack (M) = problem
    # write_to_file(M,"OCRA_2.0_opzione_4.mps")
