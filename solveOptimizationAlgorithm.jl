@@ -48,7 +48,7 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
     h_zz= zeros(NSteps+1)
     h_yz= zeros(NSteps+1)
 
-    bin_op = zeros(NSteps+1)
+    #bin_op = zeros(NSteps+1)
 
     problem = BuildStageProblem_3(InputParameters, SolverParameters, Battery)
 
@@ -96,7 +96,7 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
             h_zz[iStep] = JuMP.value(problem.h_zz[iStep])
             h_yz[iStep] = JuMP.value(problem.h_yz[iStep])
 
-            bin_op[iStep] = JuMP.value(problem.bin_op[iStep])
+            #bin_op[iStep] = JuMP.value(problem.bin_op[iStep])
 
         end
 
@@ -160,7 +160,7 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
         soc,
         e_charge,
         e_discharge,
-        bin_op,
+        #bin_op,
         deg,
         soc_quad,
         x,

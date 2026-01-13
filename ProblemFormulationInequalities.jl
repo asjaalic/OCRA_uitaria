@@ -33,7 +33,7 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
 
     @variable(M, 0 <= e_charge[iStep=1:NSteps] <= max_SOH/min_SOH, base_name= "Charge")      #max_disc   0<=discharge<=1
     @variable(M, 0 <= e_discharge[iStep=1:NSteps] <= max_SOH/min_SOH, base_name= "Discharge")
-    @variable(M, bin_op[iStep=1:NSteps], Bin, base_name = "Binary_operation")
+   # @variable(M, bin_op[iStep=1:NSteps], Bin, base_name = "Binary_operation")
     
     @variable(M, 0 <= deg[iStep=1:NSteps] <= Small*max_SOH/min_SOH, base_name = "Degradation")
 
@@ -196,7 +196,7 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
         soc_quad,
         e_charge,
         e_discharge,
-        bin_op,
+        #bin_op,
         deg,
         x,
         y,
