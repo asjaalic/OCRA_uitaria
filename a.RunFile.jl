@@ -57,7 +57,7 @@ to = TimerOutput()
   Steps_stop = [120 127 115 120] # 3 weeks downtime
   NSteps = Steps_stages[NStages+1]
 
-  Battery_price_purchase = read_csv("Mid-cost projections 2026-2036.csv",case.DataPath)
+  Battery_price_purchase = read_csv("Mid-cost projections 2026-2036_5_years.csv",case.DataPath)
   Battery_price_sale = set_price(Battery_price_purchase,cost);
   
   Power_prices = read_csv("Prezzi_2026_2035_filtered.csv", case.DataPath);    
@@ -78,7 +78,7 @@ end
 
 # SAVE DATA IN EXCEL FILES
 if runMode.excel_savings
-  cartella = "C:\\GitHub\\OCRA_3.0_unitaria\\Results_12_gennaio"
+  cartella = "C:\\GitHub_Asja\\OCRA_unitary\\Results_12_gennaio"
   cd(cartella)
   Saving = data_saving(InputParameters,ResultsOpt)
 else

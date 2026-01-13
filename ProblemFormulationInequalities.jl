@@ -14,7 +14,7 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
 
     M = Model(Gurobi.Optimizer)
     set_optimizer_attribute(M, "MIPGap", 0.05)
-    #set_optimizer_attribute(M, "Method", 0)
+    #=set_optimizer_attribute(M, "Method", 0)
     set_optimizer_attribute(M, "MIPFocus", 1)
     set_optimizer_attribute(M, "Cuts", 0) #ConcurrentMIP
 
@@ -23,7 +23,7 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     set_optimizer_attribute(M, "SoftMemLimit", 110)
 
     set_optimizer_attribute(M, "Presolve", 2)
-    set_optimizer_attribute(M, "PreSparsify", 1)
+    set_optimizer_attribute(M, "PreSparsify", 1)=#
     
 
     # DEFINE VARIABLES

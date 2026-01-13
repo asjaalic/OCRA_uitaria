@@ -114,7 +114,7 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
         for iStage=1:NStages
             rev[iStage] = JuMP.value(problem.revamping[iStage])
             e[iStage] = JuMP.value(problem.e[iStage])
-            deg_stage[iStage] = sum(deg[iStep] for iStep=(Steps_stages[iStage]+1):(Steps_stages[iStage+1]))
+            #deg_stage[iStage] = sum(deg[iStep] for iStep=(Steps_stages[iStage]+1):(Steps_stages[iStage+1]))
             rev_acquisto[iStage] = JuMP.value(problem.rev_acquisto[iStage])
             rev_vendita[iStage] = JuMP.value(problem.rev_vendita[iStage])
         end
