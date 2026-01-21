@@ -24,6 +24,7 @@ function BuildStageProb_3(InputParameters::InputParam, SolverParameters::SolverP
 
     #set_optimizer_attribute(M, "Presolve", 2)
     #set_optimizer_attribute(M, "PreSparsify", 1)
+    #set_attribute(M, "LogFile.txt", "C:\\GitHub_Asja\\OCRA_unitary\\Results_12_gennaio")
     
 
     # DEFINE VARIABLES
@@ -50,7 +51,7 @@ function BuildStageProb_3(InputParameters::InputParam, SolverParameters::SolverP
     @variable(M, y[iStep=1:NSteps+1], Bin, base_name = "Binary_2")
     @variable(M, z[iStep=1:NSteps+1], Bin, base_name = "Binary_3")
 
-    @variable(M, w_xx[iStep=1:NSteps+1] , Bin, base_name = "xx")
+    @variable(M, w_xx[iStep=1:NSteps+1], Bin, base_name = "xx")
     @variable(M, w_yy[iStep=1:NSteps+1], Bin, base_name = "yy")
     @variable(M, w_zz[iStep=1:NSteps+1], Bin, base_name = "zz")
     @variable(M, w_xy[iStep=1:NSteps+1], Bin, base_name = "xy")
