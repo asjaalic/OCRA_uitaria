@@ -37,6 +37,7 @@ function BuildStageProb_3(InputParameters::InputParam, SolverParameters::SolverP
    # @variable(M, bin_op[iStep=1:NSteps], Bin, base_name = "Binary_operation")
     
     @variable(M, 0 <= deg[iStep=1:NSteps] <= Small*max_SOH/min_SOH, base_name = "Degradation")
+    @variable(M, -Small*max_SOH/min_SOH <= aux_deg[iStep=1:NSteps] <= Small*max_SOH/min_SOH, base_name = "Aux_Degradation")
 
     @variable(M, 0 <= revamping[iStage=1:NStages] <= (max_SOH-min_SOH)/max_SOC, base_name = "Revamping")
     @variable(M, min_SOH/min_SOH <= capacity[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Energy_Capacity")        #energy_Capacity     [iStage=1:NStages]
@@ -164,8 +165,9 @@ function BuildStageProb_3(InputParameters::InputParam, SolverParameters::SolverP
     #@constraint(M, discharging[iStep=1:NSteps], e_discharge[iStep] <= max_P*NHoursStep*bin_op[iStep])
 
     # CONSTRAINTS ON DEGRADATION
-    @constraint(M, deg_1[iStep=1:NSteps], deg[iStep] >= (2*min_SOC*Beta-2*Beta)*(h_x[iStep+1]-h_x[iStep]+2*(h_y[iStep+1]-h_y[iStep])+4*(h_z[iStep+1]-h_z[iStep]))+Beta^2*(h_xx[iStep+1]-h_xx[iStep]+4*(h_xy[iStep+1]-h_xy[iStep])+8*(h_xz[iStep+1]-h_xz[iStep])+4*(h_yy[iStep+1]-h_yy[iStep])+16*(h_zz[iStep+1]-h_zz[iStep])+16*(h_yz[iStep+1]-h_yz[iStep])))
-    @constraint(M, deg_2[iStep=1:NSteps], deg[iStep] >= (2*min_SOC*Beta-2*Beta)*(h_x[iStep]-h_x[iStep+1]+2*(h_y[iStep]-h_y[iStep+1])+4*(h_z[iStep]-h_z[iStep+1]))+Beta^2*(h_xx[iStep]-h_xx[iStep+1]+4*(h_xy[iStep]-h_xy[iStep+1])+8*(h_xz[iStep]-h_xz[iStep+1])+4*(h_yy[iStep]-h_yy[iStep+1])+16*(h_zz[iStep]-h_zz[iStep+1])+16*(h_yz[iStep]-h_yz[iStep+1])))
+    @constraint(M, deg_1[iStep=1:NSteps], deg[iStep] >= aux_deg[iStep])
+    @constraint(M, deg_2[iStep=1:NSteps], deg[iStep] >= -aux_deg[iStep] ) #(2*min_SOC*Beta-2*Beta)*(h_x[iStep]-h_x[iStep+1]+2*(h_y[iStep]-h_y[iStep+1])+4*(h_z[iStep]-h_z[iStep+1]))+Beta^2*(h_xx[iStep]-h_xx[iStep+1]+4*(h_xy[iStep]-h_xy[iStep+1])+8*(h_xz[iStep]-h_xz[iStep+1])+4*(h_yy[iStep]-h_yy[iStep+1])+16*(h_zz[iStep]-h_zz[iStep+1])+16*(h_yz[iStep]-h_yz[iStep+1]))
+    @constraint(M, aux_deg_c[iStep=1:NSteps], aux_deg[iStep] >= (2*min_SOC*Beta-2*Beta)*(h_x[iStep+1]-h_x[iStep]+2*(h_y[iStep+1]-h_y[iStep])+4*(h_z[iStep+1]-h_z[iStep]))+Beta^2*(h_xx[iStep+1]-h_xx[iStep]+4*(h_xy[iStep+1]-h_xy[iStep])+8*(h_xz[iStep+1]-h_xz[iStep])+4*(h_yy[iStep+1]-h_yy[iStep])+16*(h_zz[iStep+1]-h_zz[iStep])+16*(h_yz[iStep+1]-h_yz[iStep])) )
 
     #CONSTRAINT ON REVAMPING
     @constraint(M, energy_capacity[iStage=1:NStages], capacity[Steps_stages[iStage]+2] == capacity[Steps_stages[iStage]+1]+revamping[iStage]-deg[Steps_stages[iStage]+1]*k_deg) #
@@ -222,5 +224,6 @@ function BuildStageProb_3(InputParameters::InputParam, SolverParameters::SolverP
         h_yy,
         h_zz,
         h_yz,
+        aux_deg,
       )
 end
