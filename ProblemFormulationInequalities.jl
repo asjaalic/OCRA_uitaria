@@ -1,6 +1,6 @@
 # STAGE MAXIMIZATION PROBLEM FORMULATION
 
-function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::SolverParam, Battery::BatteryParam)       
+function BuildStageProb_3(InputParameters::InputParam, SolverParameters::SolverParam, Battery::BatteryParam)       
 
     @unpack (MIPGap, MIPFocus, Method, Cuts, Heuristics) = SolverParameters;
   
@@ -8,15 +8,24 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @unpack (min_SOC, max_SOC, min_P, max_P, Eff_charge, Eff_discharge, max_SOH, min_SOH, Nfull, fix) = Battery ;         
 
     k_deg = 1/(2*Nfull)
-    Small = 0.64
+    Small = 1
     disc = 7
     Beta = (max_SOC-min_SOC)/disc
 
     M = Model(Gurobi.Optimizer)
     set_optimizer_attribute(M, "MIPGap", 0.05)
-    set_optimizer_attribute(M, "Method", 0)
-    set_optimizer_attribute(M, "NorelHeurTime", 54)
-    set_optimizer_attribute(M, "Aggregate", 0)
+    #set_optimizer_attribute(M, "Method", 0)
+    #set_optimizer_attribute(M, "MIPFocus", 1)
+    #set_optimizer_attribute(M, "Cuts", 0) #ConcurrentMIP
+
+    #set_optimizer_attribute(M, "Threads", 16)
+    #set_optimizer_attribute(M, "NodefileStart", 80) # Swap to disk after 10GB
+    #set_optimizer_attribute(M, "SoftMemLimit", 110)
+
+    #set_optimizer_attribute(M, "Presolve", 2)
+    #set_optimizer_attribute(M, "PreSparsify", 1)
+    #set_attribute(M, "LogFile.txt", "C:\\GitHub_Asja\\OCRA_unitary\\Results_12_gennaio")
+    
 
     # DEFINE VARIABLES
 
@@ -25,17 +34,17 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
 
     @variable(M, 0 <= e_charge[iStep=1:NSteps] <= max_SOH/min_SOH, base_name= "Charge")      #max_disc   0<=discharge<=1
     @variable(M, 0 <= e_discharge[iStep=1:NSteps] <= max_SOH/min_SOH, base_name= "Discharge")
-    @variable(M, bin_op[iStep=1:NSteps], Bin, base_name = "Binary_operation")
+   # @variable(M, bin_op[iStep=1:NSteps], Bin, base_name = "Binary_operation")
     
     @variable(M, 0 <= deg[iStep=1:NSteps] <= Small*max_SOH/min_SOH, base_name = "Degradation")
-    @variable(M, 0 <= aux_deg[iStep=1:NSteps] <= Small, base_name = "Aux_deg")
+    @variable(M, -Small*max_SOH/min_SOH <= aux_deg[iStep=1:NSteps] <= Small*max_SOH/min_SOH, base_name = "Aux_Degradation")
 
     @variable(M, 0 <= revamping[iStage=1:NStages] <= (max_SOH-min_SOH)/max_SOC, base_name = "Revamping")
     @variable(M, min_SOH/min_SOH <= capacity[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Energy_Capacity")        #energy_Capacity     [iStage=1:NStages]
-    #@variable(M, e[iStage=1:NStages], Bin, base_name ="Binary Revamp")max_SOH/min_SOH
+    @variable(M, e[iStage=1:NStages], Bin, base_name ="Binary Revamp")max_SOH/min_SOH
 
-    #@variable(M, 0<= rev_vendita[iStage=1:NStages] <= max_SOH/min_SOH, base_name = "Vendita rev")
-    #@variable(M, -max_SOH/min_SOH <= rev_acquisto[iStage=1:NStages] <= 0, base_name = "Acquisto rev")
+    @variable(M, 0<= rev_vendita[iStage=1:NStages] <= max_SOH/min_SOH, base_name = "Vendita rev")
+    @variable(M, -max_SOH/min_SOH <= rev_acquisto[iStage=1:NStages] <= 0, base_name = "Acquisto rev")
 
     #VARIABLES FOR DISCRETIZATION of Stored Energy
 
@@ -43,16 +52,24 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @variable(M, y[iStep=1:NSteps+1], Bin, base_name = "Binary_2")
     @variable(M, z[iStep=1:NSteps+1], Bin, base_name = "Binary_3")
 
-    @variable(M, 0<= w_xx[iStep=1:NSteps+1] <= 1, base_name = "xx")
-    @variable(M, 0<= w_yy[iStep=1:NSteps+1] <= 1, base_name = "yy")
-    @variable(M, 0<= w_zz[iStep=1:NSteps+1] <= 1, base_name = "zz")
-    @variable(M, 0<= w_xy[iStep=1:NSteps+1] <= 1, base_name = "xy")
-    @variable(M, 0<= w_xz[iStep=1:NSteps+1] <= 1, base_name = "xz")
-    @variable(M, 0<= w_zy[iStep=1:NSteps+1] <= 1, base_name = "yz")
+    @variable(M, w_xx[iStep=1:NSteps+1], Bin, base_name = "xx")
+    @variable(M, w_yy[iStep=1:NSteps+1], Bin, base_name = "yy")
+    @variable(M, w_zz[iStep=1:NSteps+1], Bin, base_name = "zz")
+    @variable(M, w_xy[iStep=1:NSteps+1], Bin, base_name = "xy")
+    @variable(M, w_xz[iStep=1:NSteps+1], Bin, base_name = "xz")
+    @variable(M, w_zy[iStep=1:NSteps+1], Bin, base_name = "yz")
     
     @variable(M, 0 <= h_x[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_1")
     @variable(M, 0 <= h_y[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_2")
     @variable(M, 0 <= h_z[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_3")
+
+    @variable(M, 0 <= h_xx[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_xx")
+    @variable(M, 0 <= h_xy[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_xy")
+    @variable(M, 0 <= h_xz[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_xz")
+    @variable(M, 0 <= h_yy[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_yy")
+    @variable(M, 0 <= h_zz[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_zz")
+    @variable(M, 0 <= h_yz[iStep=1:NSteps+1] <= max_SOH/min_SOH, base_name = "Aux_yz")
+
 
     # DEFINE OBJECTIVE function - length(Battery_price) = NStages+1=21
     @objective(
@@ -60,11 +77,11 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
       MathOptInterface.MAX_SENSE, 
       sum(Power_prices[iStep]*(e_discharge[iStep]*Eff_discharge-e_charge[iStep]/Eff_charge) for iStep=1:NSteps) -               # 
       Battery_price_purchase[1]*(revamping[1]) 
-      -sum(Battery_price_purchase[iStage]*(revamping[iStage]) for iStage=1:NStages) +
-      #sum(Battery_price_purchase[iStage]*(capacity[Steps_stages[iStage]+2] + rev_acquisto[iStage]) for iStage=2:NStages) +
-      #sum(Battery_price_sale[iStage]*(capacity[Steps_stages[iStage]+1] - rev_vendita[iStage]) for iStage=2:NStages) +
+      #-sum(Battery_price_purchase[iStage]*(revamping[iStage]) for iStage=1:NStages) +
+      - sum(Battery_price_purchase[iStage]*(capacity[Steps_stages[iStage]+2] + rev_acquisto[iStage]) for iStage=2:NStages) 
+      + sum(Battery_price_sale[iStage]*(capacity[Steps_stages[iStage]+1] - rev_vendita[iStage]) for iStage=2:NStages) +
       Battery_price_sale[NStages+1]*(capacity[end]- min_SOH/min_SOH)  
-      #-sum(fix*e[iStage] for iStage=1:NStages) 
+      -sum(fix*e[iStage] for iStage=1:NStages) 
       + 2300    
       )
          
@@ -112,15 +129,45 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
     @constraint(M, h_z_3[iStep=1:NSteps+1], h_z[iStep]>= capacity[iStep]-max_SOH/min_SOH*(1-z[iStep]))
     @constraint(M, h_z_4[iStep=1:NSteps+1], h_z[iStep]<= capacity[iStep]-min_SOH/min_SOH*(1-z[iStep]))
 
+    #ADDITIONAL CONSTRAINTS FOR DEGRADATION (BILINEAR TERMS)
+    @constraint(M, h_xx_1[iStep=1:NSteps+1], h_xx[iStep]>= min_SOH/min_SOH*w_xx[iStep])
+    @constraint(M, h_xx_2[iStep=1:NSteps+1], h_xx[iStep]<= max_SOH/min_SOH*w_xx[iStep])
+    @constraint(M, h_xx_3[iStep=1:NSteps+1], h_xx[iStep]>= capacity[iStep]-max_SOH/min_SOH*(1-w_xx[iStep]))
+    @constraint(M, h_xx_4[iStep=1:NSteps+1], h_xx[iStep]<= capacity[iStep]-min_SOH/min_SOH*(1-w_xx[iStep]))
+
+    @constraint(M, h_xy_1[iStep=1:NSteps+1], h_xy[iStep]>= min_SOH/min_SOH*w_xy[iStep])
+    @constraint(M, h_xy_2[iStep=1:NSteps+1], h_xy[iStep]<= max_SOH/min_SOH*w_xy[iStep])
+    @constraint(M, h_xy_3[iStep=1:NSteps+1], h_xy[iStep]>= capacity[iStep]-max_SOH/min_SOH*(1-w_xy[iStep]))
+    @constraint(M, h_xy_4[iStep=1:NSteps+1], h_xy[iStep]<= capacity[iStep]-min_SOH/min_SOH*(1-w_xy[iStep]))
+
+    @constraint(M, h_xz_1[iStep=1:NSteps+1], h_xz[iStep]>= min_SOH/min_SOH*w_xz[iStep])
+    @constraint(M, h_xz_2[iStep=1:NSteps+1], h_xz[iStep]<= max_SOH/min_SOH*w_xz[iStep])
+    @constraint(M, h_xz_3[iStep=1:NSteps+1], h_xz[iStep]>= capacity[iStep]-max_SOH/min_SOH*(1-w_xz[iStep]))
+    @constraint(M, h_xz_4[iStep=1:NSteps+1], h_xz[iStep]<= capacity[iStep]-min_SOH/min_SOH*(1-w_xz[iStep]))
+
+    @constraint(M, h_yy_1[iStep=1:NSteps+1], h_yy[iStep]>= min_SOH/min_SOH*w_yy[iStep])
+    @constraint(M, h_yy_2[iStep=1:NSteps+1], h_yy[iStep]<= max_SOH/min_SOH*w_yy[iStep])
+    @constraint(M, h_yy_3[iStep=1:NSteps+1], h_yy[iStep]>= capacity[iStep]-max_SOH/min_SOH*(1-w_yy[iStep]))
+    @constraint(M, h_yy_4[iStep=1:NSteps+1], h_yy[iStep]<= capacity[iStep]-min_SOH/min_SOH*(1-w_yy[iStep]))
+
+    @constraint(M, h_zz_1[iStep=1:NSteps+1], h_zz[iStep]>= min_SOH/min_SOH*w_zz[iStep])
+    @constraint(M, h_zz_2[iStep=1:NSteps+1], h_zz[iStep]<= max_SOH/min_SOH*w_zz[iStep])
+    @constraint(M, h_zz_3[iStep=1:NSteps+1], h_zz[iStep]>= capacity[iStep]-max_SOH/min_SOH*(1-w_zz[iStep]))
+    @constraint(M, h_zz_4[iStep=1:NSteps+1], h_zz[iStep]<= capacity[iStep]-min_SOH/min_SOH*(1-w_zz[iStep]))
+
+    @constraint(M, h_yz_1[iStep=1:NSteps+1], h_yz[iStep]>= min_SOH/min_SOH*w_zy[iStep])
+    @constraint(M, h_yz_2[iStep=1:NSteps+1], h_yz[iStep]<= max_SOH/min_SOH*w_zy[iStep])
+    @constraint(M, h_yz_3[iStep=1:NSteps+1], h_yz[iStep]>= capacity[iStep]-max_SOH/min_SOH*(1-w_zy[iStep]))
+    @constraint(M, h_yz_4[iStep=1:NSteps+1], h_yz[iStep]<= capacity[iStep]-min_SOH/min_SOH*(1-w_zy[iStep]))
+
     #binary variable for operation
-    @constraint(M, charging[iStep=1:NSteps], e_charge[iStep] <= max_P*NHoursStep*(1-bin_op[iStep]))
-    @constraint(M, discharging[iStep=1:NSteps], e_discharge[iStep] <= max_P*NHoursStep*bin_op[iStep])
+    #@constraint(M, charging[iStep=1:NSteps], e_charge[iStep] <= max_P*NHoursStep*(1-bin_op[iStep]))
+    #@constraint(M, discharging[iStep=1:NSteps], e_discharge[iStep] <= max_P*NHoursStep*bin_op[iStep])
 
     # CONSTRAINTS ON DEGRADATION
-    @constraint(M, deg_1[iStep=1:NSteps], aux_deg[iStep] >= soc_quad[iStep] - soc_quad[iStep+1] + 2*(soc[iStep+1]-soc[iStep]))
-    @constraint(M, deg_2[iStep=1:NSteps], aux_deg[iStep] >= soc_quad[iStep+1] - soc_quad[iStep] + 2*(soc[iStep]-soc[iStep+1]))
-
-    @constraint(M, final_deg[iStep=1:NSteps], deg[iStep] >= capacity[iStep]*aux_deg[iStep])
+    @constraint(M, deg_1[iStep=1:NSteps], deg[iStep] >= aux_deg[iStep])
+    @constraint(M, deg_2[iStep=1:NSteps], deg[iStep] >= -aux_deg[iStep] ) #(2*min_SOC*Beta-2*Beta)*(h_x[iStep]-h_x[iStep+1]+2*(h_y[iStep]-h_y[iStep+1])+4*(h_z[iStep]-h_z[iStep+1]))+Beta^2*(h_xx[iStep]-h_xx[iStep+1]+4*(h_xy[iStep]-h_xy[iStep+1])+8*(h_xz[iStep]-h_xz[iStep+1])+4*(h_yy[iStep]-h_yy[iStep+1])+16*(h_zz[iStep]-h_zz[iStep+1])+16*(h_yz[iStep]-h_yz[iStep+1]))
+    @constraint(M, aux_deg_c[iStep=1:NSteps], aux_deg[iStep] >= (2*min_SOC*Beta-2*Beta)*(h_x[iStep+1]-h_x[iStep]+2*(h_y[iStep+1]-h_y[iStep])+4*(h_z[iStep+1]-h_z[iStep]))+Beta^2*(h_xx[iStep+1]-h_xx[iStep]+4*(h_xy[iStep+1]-h_xy[iStep])+8*(h_xz[iStep+1]-h_xz[iStep])+4*(h_yy[iStep+1]-h_yy[iStep])+16*(h_zz[iStep+1]-h_zz[iStep])+16*(h_yz[iStep+1]-h_yz[iStep])) )
 
     #CONSTRAINT ON REVAMPING
     @constraint(M, energy_capacity[iStage=1:NStages], capacity[Steps_stages[iStage]+2] == capacity[Steps_stages[iStage]+1]+revamping[iStage]-deg[Steps_stages[iStage]+1]*k_deg) #
@@ -129,22 +176,22 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
 
     @constraint(M,en_cap1[iStage in 1:NStages, iStep in ((Steps_stages[iStage]+2):Steps_stages[iStage+1])], capacity[iStep+1]== capacity[iStep]-deg[iStep]*k_deg)
 
-    #@constraint(M, stop_charge[iStage in 2:NStages, iStep in (Steps_stages[iStage]:(Steps_stages[iStage]+Steps_stop[iStage-1]))], e_charge[iStep] <= (1-e[iStage])*max_P)
-    
-    #@constraint(M, stop_discharge[iStage in 2:NStages, iStep in (Steps_stages[iStage]:(Steps_stages[iStage]+Steps_stop[iStage-1]))], e_discharge[iStep] <= (1-e[iStage])*max_P) 
+    @constraint(M, stop_charge[iStage in 2:NStages, iStep in (Steps_stages[iStage]:(Steps_stages[iStage]+Steps_stop[iStage-1]))], e_charge[iStep] <= (1-e[iStage])*max_P) 
+    @constraint(M, stop_discharge[iStage in 2:NStages, iStep in (Steps_stages[iStage]:(Steps_stages[iStage]+Steps_stop[iStage-1]))], e_discharge[iStep] <= (1-e[iStage])*max_P) 
 
-    #@constraint(M, rev_3[iStage=1:NStages], capacity[Steps_stages[iStage]+2]>= capacity[Steps_stages[iStage]+1])
-    @constraint(M, rev[iStage=1:NStages], revamping[iStage] <= (max_SOH-min_SOH))
-    #@constraint(M, rev[iStage=1:NStages], revamping[iStage] <= (max_SOH-min_SOH)*e[iStage])
+    @constraint(M, rev_3[iStage=1:NStages], capacity[Steps_stages[iStage]+2]>= capacity[Steps_stages[iStage]+1])
+   #@constraint(M, rev[iStage=1:NStages], revamping[iStage] <= (max_SOH-min_SOH))
+    @constraint(M, rev[iStage=1:NStages], revamping[iStage] <= (max_SOH-min_SOH)*e[iStage])
+    @constraint(M, first_e[iStage=1], e[iStage] == 1)
 
-    #= CONSTRAINT SU VARIABILI AUSILIARIE PER ACQUISTO/VENDITA
+    #CONSTRAINT SU VARIABILI AUSILIARIE PER ACQUISTO/VENDITA
     @constraint(M, vendita[iStage=1], rev_vendita[iStage] == 0)
     @constraint(M, vendita_1[iStage=2:NStages], rev_vendita[iStage] >= 0)
     @constraint(M, vendita_2[iStage=2:NStages], rev_vendita[iStage] >= capacity[Steps_stages[iStage]+1]- e[iStage]*Big)
 
     @constraint(M, acquisto_1[iStage=2:NStages], rev_acquisto[iStage] >= -(1-e[iStage])*Big)
     @constraint(M, acquisto_2[iStage=2:NStages], rev_acquisto[iStage] >= -capacity[Steps_stages[iStage]+2] )
-    @constraint(M, acquisto_3[iStage=1], rev_acquisto[iStage] == 0)=#
+    @constraint(M, acquisto_3[iStage=1], rev_acquisto[iStage] == 0)
 
     return BuildStageProblem_3(
         M,
@@ -152,30 +199,31 @@ function BuildStageProblem_3(InputParameters::InputParam, SolverParameters::Solv
         soc_quad,
         e_charge,
         e_discharge,
-        bin_op,
+        #bin_op,
         deg,
-        aux_deg,
         x,
         y,
         z,
         h_x,
         h_y,
         h_z,
-        #u,
         w_xx,
         w_yy,
         w_zz,
         w_xy,
         w_xz,
         w_zy,
-        #w_uu,
-        #w_xu,
-        #w_yu,
-        #w_zu,
         capacity,
         revamping,
-        #e,
-        #rev_vendita,
-        #rev_acquisto,
+        e,
+        rev_vendita,
+        rev_acquisto,
+        h_xx,
+        h_xy,
+        h_xz,
+        h_yy,
+        h_zz,
+        h_yz,
+        aux_deg,
       )
 end

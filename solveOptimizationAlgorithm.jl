@@ -19,13 +19,12 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
     e_discharge = zeros(NSteps)
     soc = zeros(NSteps+1)
     deg = zeros(NSteps)
-    aux_deg = zeros(NSteps)
     rev= zeros(NStages)
     cap = zeros(NSteps+1)
 
-    #e = zeros(NStages)
-    #rev_vendita = zeros(NStages)
-    #rev_acquisto = zeros(NStages)
+    e = zeros(NStages)
+    rev_vendita = zeros(NStages)
+    rev_acquisto = zeros(NStages)
 
     soc_quad = zeros(NSteps+1)
     x = zeros(NSteps+1)
@@ -37,16 +36,26 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
     w_xy = zeros(NSteps+1)
     w_xz = zeros(NSteps+1)
     w_zy = zeros(NSteps+1)
+
     h_x = zeros(NSteps+1)
     h_y = zeros(NSteps+1)
     h_z = zeros(NSteps+1)
 
-    bin_op = zeros(NSteps+1)
+    h_xx= zeros(NSteps+1)
+    h_xy= zeros(NSteps+1)
+    h_xz= zeros(NSteps+1)
+    h_yy= zeros(NSteps+1)
+    h_zz= zeros(NSteps+1)
+    h_yz= zeros(NSteps+1)
 
-    problem = BuildStageProblem_3(InputParameters, SolverParameters, Battery)
+    aux_deg=zeros(NSteps)
+
+    #bin_op = zeros(NSteps+1)
+
+    problem = BuildStageProb_3(InputParameters, SolverParameters, Battery)
 
    # @unpack (M) = problem
-   # write_to_file(M,"modello_Formato_mps.mps")
+   # write_to_file(M,"OCRA_2.0_opzione_4.mps")
 
     @timeit to "Solve optimization" optimize!(problem.M)
 
@@ -82,8 +91,15 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
             h_y[iStep] = JuMP.value(problem.h_y[iStep])
             h_z[iStep] = JuMP.value(problem.h_z[iStep])
 
-            bin_op[iStep] = JuMP.value(problem.bin_op[iStep])
-            aux_deg[iStep] = JuMP.value(problem.aux_deg[iStep])
+            h_xx[iStep] = JuMP.value(problem.h_xx[iStep])
+            h_xy[iStep] = JuMP.value(problem.h_xy[iStep])
+            h_xz[iStep] = JuMP.value(problem.h_xz[iStep])
+            h_yy[iStep] = JuMP.value(problem.h_yy[iStep])
+            h_zz[iStep] = JuMP.value(problem.h_zz[iStep])
+            h_yz[iStep] = JuMP.value(problem.h_yz[iStep])
+
+            #bin_op[iStep] = JuMP.value(problem.bin_op[iStep])
+            aux_deg[iStep] = JuMP.value(aux_deg[iStep])
 
         end
 
@@ -104,28 +120,35 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
         h_y[end] = JuMP.value(problem.h_y[end])
         h_z[end] = JuMP.value(problem.h_z[end])
 
+        h_xx[end] = JuMP.value(problem.h_xx[end])
+        h_xy[end] = JuMP.value(problem.h_xy[end])
+        h_xz[end] = JuMP.value(problem.h_xz[end])
+        h_yy[end] = JuMP.value(problem.h_yy[end])
+        h_zz[end] = JuMP.value(problem.h_zz[end])
+        h_yz[end] = JuMP.value(problem.h_yz[end])
+
         cap[end] = JuMP.value(problem.capacity[end])
      
         for iStage=1:NStages
             rev[iStage] = JuMP.value(problem.revamping[iStage])
-            #e[iStage] = JuMP.value(problem.e[iStage])
+            e[iStage] = JuMP.value(problem.e[iStage])
             deg_stage[iStage] = sum(deg[iStep] for iStep=(Steps_stages[iStage]+1):(Steps_stages[iStage+1]))
-            #rev_acquisto[iStage] = JuMP.value(problem.rev_acquisto[iStage])
-            #rev_vendita[iStage] = JuMP.value(problem.rev_vendita[iStage])
+            rev_acquisto[iStage] = JuMP.value(problem.rev_acquisto[iStage])
+            rev_vendita[iStage] = JuMP.value(problem.rev_vendita[iStage])
         end
         
         for iStage=2:(NStages-1)
             gain_stage[iStage] = sum(Power_prices[iStep]*(e_discharge[iStep]*Eff_discharge-e_charge[iStep]/Eff_charge) for iStep=(Steps_stages[iStage]+1):(Steps_stages[iStage+1]))
-            cost_rev[iStage] = Battery_price_purchase[iStage]*rev[iStage]
-            #cost_rev[iStage] = Battery_price_purchase[iStage]*(cap[Steps_stages[iStage]+2]+rev_acquisto[iStage]) - Battery_price_sale[iStage]*(cap[Steps_stages[iStage]+1]-rev_vendita[iStage]) + e[iStage]*fix
+            #cost_rev[iStage] = Battery_price_purchase[iStage]*rev[iStage]
+            cost_rev[iStage] = Battery_price_purchase[iStage]*(cap[Steps_stages[iStage]+2]+rev_acquisto[iStage]) - Battery_price_sale[iStage]*(cap[Steps_stages[iStage]+1]-rev_vendita[iStage]) + e[iStage]*fix
         end
 
         gain_stage[1] = sum(Power_prices[iStep]*(e_discharge[iStep]*Eff_discharge-e_charge[iStep]/Eff_charge) for iStep=(Steps_stages[1]+1):(Steps_stages[2]))
-        cost_rev[1] = Battery_price_purchase[1]*rev[1] #+ fix*e[1]
+        cost_rev[1] = Battery_price_purchase[1]*rev[1] + fix*e[1]
 
         gain_stage[NStages]= sum(Power_prices[iStep]*(e_discharge[iStep]*Eff_discharge-e_charge[iStep]/Eff_charge) for iStep=(Steps_stages[NStages]+1):(Steps_stages[NStages+1]))
-        #cost_rev[NStages] = e[NStages]*fix + *(cap[Steps_stages[NStages]+2]+rev_acquisto[NStages]) - Battery_price_sale[NStages+1]*(cap[end]-min_SOH) -Battery_price_sale[NStages]*(cap[Steps_stages[NStages]+1]-rev_vendita[NStages])
-        cost_rev[NStages]= Battery_price_sale[NStages]*(cap[end]-min_SOH/min_SOH)
+        cost_rev[NStages] = e[NStages]*fix + Battery_price_purchase[NStages]*(cap[Steps_stages[NStages]+2]+rev_acquisto[NStages]) - Battery_price_sale[NStages+1]*(cap[end]-min_SOH) -Battery_price_sale[NStages]*(cap[Steps_stages[NStages]+1]-rev_vendita[NStages])
+        #cost_rev[NStages]= Battery_price_purchase[NStages]*rev[NStages] - Battery_price_sale[NStages+1]*(cap[end]-min_SOH/min_SOH)
 
     end
     
@@ -140,9 +163,8 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
         soc,
         e_charge,
         e_discharge,
-        bin_op,
+        #bin_op,
         deg,
-        aux_deg,
         soc_quad,
         x,
         y,
@@ -158,9 +180,16 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
         h_z,
         rev,
         cap,  
-        #e,
-        #rev_vendita,
-        #rev_acquisto,
+        e,
+        rev_vendita,
+        rev_acquisto,
+        h_xx,
+        h_xy,
+        h_xz,
+        h_yy,
+        h_zz,
+        h_yz,
+        aux_deg,
     )
 
 end
