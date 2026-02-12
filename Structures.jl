@@ -98,7 +98,7 @@ struct BuildStageProblem_3
     h_yy::Any
     h_zz::Any
     h_yz::Any
-    aux_deg::Any
+    #aux_deg::Any
 end
 
 struct Results_3
@@ -135,7 +135,7 @@ struct Results_3
     h_yy::Any
     h_zz::Any
     h_yz::Any
-    aux_deg::Any
+    #aux_deg::Any
 end
 
 struct BuildStageProblem_4

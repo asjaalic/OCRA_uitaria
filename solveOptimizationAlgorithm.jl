@@ -48,7 +48,7 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
     h_zz= zeros(NSteps+1)
     h_yz= zeros(NSteps+1)
 
-    aux_deg=zeros(NSteps)
+    #aux_deg=zeros(NSteps)
 
     #bin_op = zeros(NSteps+1)
 
@@ -99,7 +99,7 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
             h_yz[iStep] = JuMP.value(problem.h_yz[iStep])
 
             #bin_op[iStep] = JuMP.value(problem.bin_op[iStep])
-            aux_deg[iStep] = JuMP.value(aux_deg[iStep])
+            #aux_deg[iStep] = JuMP.value(problem.aux_deg[iStep])
 
         end
 
@@ -189,7 +189,7 @@ function solveOptimizationProblem_3(InputParameters::InputParam, SolverParameter
         h_yy,
         h_zz,
         h_yz,
-        aux_deg,
+        #aux_deg,
     )
 
 end
